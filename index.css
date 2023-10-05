@@ -1,0 +1,207 @@
+@font-face {
+    font-family: kodia;
+    src: url('assets/font/kodia.eot');
+    src: url('assets/font/kodia.eot?#iefix') format('embedded-opentype'), url('assets/font/kodia.woff2') format('woff2'),
+        url('assets/font/kodia.woff') format('woff'), url('assets/font/kodia.ttf') format('truetype');
+    font-display: block;
+}
+
+footer {
+    position: fixed;
+    margin: 0px;
+    margin-left: -200px;
+    text-align: center;
+    width: 400px;
+    bottom: 0px;
+    left: 50%;
+}
+
+body {
+    background-size: cover;
+    background-color: black;
+    background-image: url('assets/images/back.jpg');
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    text-shadow: 0 0 6px #000, 0 0 6px #000, 0 0 6px #000, 0 0 6px #000, 0 0 6px #000;
+    color: white;
+}
+
+input,
+select {
+    text-transform: capitalize;
+    color: white;
+    background: rgba(0, 0, 0, 0.6);
+    border: none;
+    outline: none;
+    overflow-x: hidden;
+    width: 250px;
+    margin-bottom: 1px;
+}
+
+.last {
+    padding-bottom: 10px;
+}
+
+.sliderValue {
+    position: absolute;
+    margin-top: -17px;
+    margin-left: 3px;
+}
+
+.sliderText {
+    display: inline-block;
+}
+
+.slider {
+    vertical-align: middle;
+    margin: auto;
+    -webkit-appearance: none;
+    background: rgba(0, 0, 0, 0.6);
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 250px;
+    cursor: ew-resize;
+    margin-bottom: 1px;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 2px;
+    height: 17px;
+    background: rgba(255, 0, 0, 1);
+    cursor: ew-resize;
+}
+
+h3 {
+    color: rgba(24, 252, 0, 1);
+}
+
+h2 {
+    position: fixed;
+    margin: 0px;
+    margin-left: -200px;
+    width: 400px;
+    text-align: center;
+    left: 50%;
+}
+
+#clear {
+    left: 10px;
+}
+
+#save {
+    left: 145px;
+}
+
+.buttontext {
+    font-family: kodia;
+    color: rgba(0, 0, 0, 0.8);
+    text-shadow: 0 0 1px rgba(0, 0, 0, 0.2), 0 0 2px #000;
+    position: relative;
+    top: -7px;
+}
+
+.buttontext:active {
+    transform: translate(-2px, 2px);
+}
+
+.button {
+    position: fixed;
+    bottom: 10px;
+    box-shadow: 0 0 10px #000000, 0 0 10px #000000, 0 0 10px #000000;
+    background: url('assets/images/Button0.png') no-repeat;
+    cursor: pointer;
+    border: none;
+    width: 128px;
+    height: 35px;
+}
+
+.button:active {
+    background: url('assets/images/Button1.png') no-repeat;
+}
+
+.button:focus {
+    outline: none;
+}
+
+.left {
+    position: fixed;
+    height: 100%;
+    width: 40%;
+    min-width: 364;
+    left: 0;
+    top: 0;
+    padding-left: 30px;
+    overflow-y: auto;
+}
+
+.right {
+    position: fixed;
+    height: 100%;
+    width: 300px;
+    right: 0;
+    top: 0;
+    padding-right: 30px;
+    overflow-y: auto;
+}
+
+.table {
+    text-transform: capitalize;
+    background-color: rgba(0, 0, 0, 0.6);
+    margin-bottom: 10px;
+    font-size: 14px;
+    width: 300px;
+}
+
+th,
+td {
+    padding-left: 5px;
+    height: 17px;
+    width: 70%;
+}
+
+th {
+    font-size: 16px;
+}
+
+.table tr:nth-child(even) {
+    background-color: rgba(89, 89, 89, 0.5);
+}
+
+.table td:nth-child(even) {
+    text-align: center;
+    padding-left: 0px;
+}
+
+#help-Table {
+    text-transform: none;
+    position: fixed;
+    bottom: 0px;
+    right: 30px;
+}
+
+.slider[norange='true'] {
+    -moz-transform: rotate(180deg);
+    -webkit-transform: rotate(180deg);
+    -ms-transform: rotate(180deg);
+    -o-transform: rotate(180deg);
+    transform: rotate(180deg);
+}
+
+option[disabled] {
+    display: none;
+}
+
+canvas {
+    border: 1px solid black;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+    position: absolute;
+    border-radius: 7px;
+    box-shadow: 0 0 10px #000000, 0 0 10px #000000;
+}

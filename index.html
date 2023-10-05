@@ -1,0 +1,370 @@
+<head>
+    <meta charset="UTF-8" />
+    <meta property="og:title" content="D2R Item Stash" />
+    <meta property="og:type" content="website" />
+    <meta property="og:description" content="D2R Item Simulator" />
+    <link rel="stylesheet" type="text/css" href="./index.css" />
+    <link rel="icon" href="./favicon.png" type="image/png" sizes="32x32" />
+    <title>D2R Item Simulator</title>
+    <script type="module" src="./src/app.js"></script>
+</head>
+<body>
+    <h2>D2R Item Simulator</h2>
+    <div id="left" class="left">
+        <br /><br />
+        <select id="classid-Select">
+            <!-- baseTypes -->
+        </select>
+        Base Item<br />
+
+        <div id="namepre-Div">
+            <select id="namepre-Select">
+                <!-- RarePrefixes -->
+            </select>
+            Name Prefix<br />
+        </div>
+
+        <div id="namesuf-Div">
+            <select id="namesuf-Select">
+                <!-- RareSuffixes -->
+            </select>
+            Name Suffix<br />
+        </div>
+
+        <select id="quality-Select">
+            <option value="6" id="quality-6">Rare</option>
+            <option value="4" id="quality-4">Magic</option>
+            <option value="8" id="quality-8">Crafted</option>
+        </select>
+        Item Rarity<br />
+
+        <select id="ethereal-Select">
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+        </select>
+        Ethereal<br />
+
+        <select id="expansion-Select">
+            <option value="1">Yes</option>
+            <option value="0">No</option>
+        </select>
+        Expansion<br />
+
+        <input id="level-Select" type="number" value="99" min="1" max="99" style="padding-left: 4px" />
+        Item Level<br />
+        <input id="charlvl-Select" type="number" value="99" min="1" max="99" style="padding-left: 4px" />
+        Char Level<br />
+
+        <select id="charclassid-Select">
+            <option value="0">Amazon</option>
+            <option value="1">Sorceress</option>
+            <option value="2">Necromancer</option>
+            <option value="3">Paladin</option>
+            <option value="4">Barbarian</option>
+            <option value="5">Druid</option>
+            <option value="6">Assassin</option>
+        </select>
+        Char class<br />
+
+        <br />
+        <br />
+
+        <div id="p1-Div">
+            <select id="p1-Select">
+                <option value="-1">---</option>
+            </select>
+            Prefix #1
+            <div id="p1-range1Div" style="display: none">
+                <input id="p1-range1" class="slider" type="range" min="1" max="100" value="50" />
+                <div class="sliderValue" id="p1-range1Value">50</div>
+                <div class="sliderText" id="p1-range1Text"></div>
+            </div>
+            <div id="p1-range2Div" style="display: none">
+                <input id="p1-range2" class="slider" type="range" min="1" max="100" value="50" />
+                <div class="sliderValue" id="p1-range2Value">50</div>
+                <div class="sliderText" id="p1-range2Text"></div>
+            </div>
+            <div id="p1-range3Div" style="display: none">
+                <input id="p1-range3" class="slider" type="range" min="1" max="100" value="50" />
+                <div class="sliderValue" id="p1-range3Value">50</div>
+                <div class="sliderText" id="p1-range3Text"></div>
+            </div>
+        </div>
+
+        <div id="p2-Div">
+            <select id="p2-Select">
+                <option value="-1">---</option>
+            </select>
+            Prefix #2
+            <div id="p2-range1Div" style="display: none">
+                <input id="p2-range1" class="slider" type="range" min="1" max="100" value="50" />
+                <div class="sliderValue" id="p2-range1Value">50</div>
+                <div class="sliderText" id="p2-range1Text"></div>
+            </div>
+            <div id="p2-range2Div" style="display: none">
+                <input id="p2-range2" class="slider" type="range" min="1" max="100" value="50" />
+                <div class="sliderValue" id="p2-range2Value">50</div>
+                <div class="sliderText" id="p2-range2Text"></div>
+            </div>
+            <div id="p2-range3Div" style="display: none">
+                <input id="p2-range3" class="slider" type="range" min="1" max="100" value="50" />
+                <div class="sliderValue" id="p2-range3Value">50</div>
+                <div class="sliderText" id="p2-range3Text"></div>
+            </div>
+        </div>
+
+        <div id="p3-Div">
+            <select id="p3-Select">
+                <option value="-1">---</option>
+            </select>
+            Prefix #3
+            <div id="p3-range1Div" style="display: none">
+                <input id="p3-range1" class="slider" type="range" min="1" max="100" value="50" />
+                <div class="sliderValue" id="p3-range1Value">50</div>
+                <div class="sliderText" id="p3-range1Text"></div>
+            </div>
+            <div id="p3-range2Div" style="display: none">
+                <input id="p3-range2" class="slider" type="range" min="1" max="100" value="50" />
+                <div class="sliderValue" id="p3-range2Value">50</div>
+                <div class="sliderText" id="p3-range2Text"></div>
+            </div>
+            <div id="p3-range3Div" style="display: none">
+                <input id="p3-range3" class="slider" type="range" min="1" max="100" value="50" />
+                <div class="sliderValue" id="p3-range3Value">50</div>
+                <div class="sliderText" id="p3-range3Text"></div>
+            </div>
+        </div>
+
+        <br />
+        <br />
+
+        <div id="s1-Div">
+            <select id="s1-Select">
+                <option value="-1">---</option>
+            </select>
+            Suffix #1
+            <div id="s1-range1Div" style="display: none">
+                <input id="s1-range1" class="slider" type="range" min="1" max="100" value="50" />
+                <div class="sliderValue" id="s1-range1Value">50</div>
+                <div class="sliderText" id="s1-range1Text"></div>
+            </div>
+            <div id="s1-range2Div" style="display: none">
+                <input id="s1-range2" class="slider" type="range" min="1" max="100" value="50" />
+                <div class="sliderValue" id="s1-range2Value">50</div>
+                <div class="sliderText" id="s1-range2Text"></div>
+            </div>
+            <div id="s1-range3Div" style="display: none">
+                <input id="s1-range3" class="slider" type="range" min="1" max="100" value="50" />
+                <div class="sliderValue" id="s1-range3Value">50</div>
+                <div class="sliderText" id="s1-range3Text"></div>
+            </div>
+        </div>
+
+        <div id="s2-Div">
+            <select id="s2-Select">
+                <option value="-1">---</option>
+            </select>
+            Suffix #2
+            <div id="s2-range1Div" style="display: none">
+                <input id="s2-range1" class="slider" type="range" min="1" max="100" value="50" />
+                <div class="sliderValue" id="s2-range1Value">50</div>
+                <div class="sliderText" id="s2-range1Text"></div>
+            </div>
+            <div id="s2-range2Div" style="display: none">
+                <input id="s2-range2" class="slider" type="range" min="1" max="100" value="50" />
+                <div class="sliderValue" id="s2-range2Value">50</div>
+                <div class="sliderText" id="s2-range2Text"></div>
+            </div>
+            <div id="s2-range3Div" style="display: none">
+                <input id="s2-range3" class="slider" type="range" min="1" max="100" value="50" />
+                <div class="sliderValue" id="s2-range3Value">50</div>
+                <div class="sliderText" id="s2-range3Text"></div>
+            </div>
+        </div>
+
+        <div id="s3-Div">
+            <select id="s3-Select">
+                <option value="-1">---</option>
+            </select>
+            Suffix #3
+            <div id="s3-range1Div" style="display: none">
+                <input id="s3-range1" class="slider" type="range" min="1" max="100" value="50" />
+                <div class="sliderValue" id="s3-range1Value">50</div>
+                <div class="sliderText" id="s3-range1Text"></div>
+            </div>
+            <div id="s3-range2Div" style="display: none">
+                <input id="s3-range2" class="slider" type="range" min="1" max="100" value="50" />
+                <div class="sliderValue" id="s3-range2Value">50</div>
+                <div class="sliderText" id="s3-range2Text"></div>
+            </div>
+            <div id="s3-range3Div" style="display: none">
+                <input id="s3-range3" class="slider" type="range" min="1" max="100" value="50" />
+                <div class="sliderValue" id="s3-range3Value">50</div>
+                <div class="sliderText" id="s3-range3Text"></div>
+            </div>
+        </div>
+
+        <br />
+        <br />
+
+        <div id="smod1-Div" style="display: block">
+            <select id="smod1-Select">
+                <option value="-1">---</option>
+            </select>
+            Staffmod #1
+            <div id="smod1-range1Div" style="display: none">
+                <input id="smod1-range1" class="slider" type="range" min="1" max="3" value="2" />
+                <div class="sliderValue" id="smod1-range1Value">2</div>
+                <div class="sliderText" id="smod1-range1Text"></div>
+            </div>
+            <div id="smod1-range2Div" style="display: none">
+                <input id="smod1-range2" class="slider" type="range" min="1" max="3" value="2" />
+                <div class="sliderValue" id="smod1-range2Value">2</div>
+                <div class="sliderText" id="smod1-range2Text"></div>
+            </div>
+            <div id="smod1-range3Div" style="display: none">
+                <input id="smod1-range3" class="slider" type="range" min="1" max="3" value="2" />
+                <div class="sliderValue" id="smod1-range3Value">2</div>
+                <div class="sliderText" id="smod1-range3Text"></div>
+            </div>
+        </div>
+
+        <div id="smod2-Div" style="display: block">
+            <select id="smod2-Select">
+                <option value="-1">---</option>
+            </select>
+            Staffmod #2
+            <div id="smod2-range1Div" style="display: none">
+                <input id="smod2-range1" class="slider" type="range" min="1" max="3" value="2" />
+                <div class="sliderValue" id="smod2-range1Value">2</div>
+                <div class="sliderText" id="smod2-range1Text"></div>
+            </div>
+            <div id="smod2-range2Div" style="display: none">
+                <input id="smod2-range2" class="slider" type="range" min="1" max="3" value="2" />
+                <div class="sliderValue" id="smod2-range2Value">2</div>
+                <div class="sliderText" id="smod2-range2Text"></div>
+            </div>
+            <div id="smod2-range3Div" style="display: none">
+                <input id="smod2-range3" class="slider" type="range" min="1" max="3" value="2" />
+                <div class="sliderValue" id="smod2-range3Value">2</div>
+                <div class="sliderText" id="smod2-range3Text"></div>
+            </div>
+        </div>
+
+        <div id="smod3-Div" style="display: block">
+            <select id="smod3-Select">
+                <option value="-1">---</option>
+            </select>
+            Staffmod #3
+            <div id="smod3-range1Div" style="display: none">
+                <input id="smod3-range1" class="slider" type="range" min="1" max="3" value="2" />
+                <div class="sliderValue" id="smod3-range1Value">2</div>
+                <div class="sliderText" id="smod3-range1Text"></div>
+            </div>
+            <div id="smod3-range2Div" style="display: none">
+                <input id="smod3-range2" class="slider" type="range" min="1" max="3" value="2" />
+                <div class="sliderValue" id="smod3-range2Value">2</div>
+                <div class="sliderText" id="smod3-range2Text"></div>
+            </div>
+            <div id="smod3-range3Div" style="display: none">
+                <input id="smod3-range3" class="slider" type="range" min="1" max="3" value="2" />
+                <div class="sliderValue" id="smod3-range3Value">2</div>
+                <div class="sliderText" id="smod3-range3Text"></div>
+            </div>
+        </div>
+
+        <br />
+        <br />
+
+        <div id="craft-Div">
+            <select id="craft-Select">
+                <option value="-1">---</option>
+            </select>
+            Craft Type
+            <div id="craft-range1Div" style="display: none">
+                <input id="craft-range1" class="slider" type="range" min="1" max="100" value="50" />
+                <div class="sliderValue" id="craft-range1Value">50</div>
+                <div class="sliderText" id="craft-range1Text"></div>
+            </div>
+            <div id="craft-range2Div" style="display: none">
+                <input id="craft-range2" class="slider" type="range" min="1" max="100" value="50" />
+                <div class="sliderValue" id="craft-range2Value">50</div>
+                <div class="sliderText" id="craft-range2Text"></div>
+            </div>
+            <div id="craft-range3Div" style="display: none">
+                <input id="craft-range3" class="slider" type="range" min="1" max="100" value="50" />
+                <div class="sliderValue" id="craft-range3Value">50</div>
+                <div class="sliderText" id="craft-range3Text"></div>
+            </div>
+            <div id="craft-range4Div" style="display: none">
+                <input id="craft-range4" class="slider" type="range" min="1" max="100" value="50" />
+                <div class="sliderValue" id="craft-range4Value">50</div>
+                <div class="sliderText" id="craft-range4Text"></div>
+            </div>
+        </div>
+
+        <br />
+        <br />
+
+        <div id="autoaffix-Div" style="display: block">
+            <select id="autoaffix-Select">
+                <option value="-1">---</option>
+            </select>
+            Auto Affix
+            <div id="autoaffix-range1Div" style="display: none">
+                <input id="autoaffix-range1" class="slider" type="range" min="1" max="100" value="50" />
+                <div class="sliderValue" id="autoaffix-range1Value">50</div>
+                <div class="sliderText" id="autoaffix-range1Text"></div>
+            </div>
+            <div id="autoaffix-range2Div" style="display: none">
+                <input id="autoaffix-range2" class="slider" type="range" min="1" max="100" value="50" />
+                <div class="sliderValue" id="autoaffix-range2Value">50</div>
+                <div class="sliderText" id="autoaffix-range2Text"></div>
+            </div>
+            <div id="autoaffix-range3Div" style="display: none">
+                <input id="autoaffix-range3" class="slider" type="range" min="1" max="100" value="50" />
+                <div class="sliderValue" id="autoaffix-range3Value">50</div>
+                <div class="sliderText" id="autoaffix-range3Text"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="right" class="right">
+        <br /><br />
+        <table id="general-Table" class="table">
+            <thead>
+                <tr>
+                    <th colspan="2">Overview</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <table id="baseTypes-Table" class="table">
+            <thead>
+                <tr>
+                    <th colspan="2">Base Specific</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <!--<table id="magicPrefix-Table"	class="table"><thead><tr><th colspan="2">Prefixes		</th></tr></thead><tbody></tbody></table>
+		<table id="magicSuffix-Table"	class="table"><thead><tr><th colspan="2">Suffixes		</th></tr></thead><tbody></tbody></table>
+		<table id="skills-Table"		class="table"><thead><tr><th colspan="2">Staff Mods		</th></tr></thead><tbody></tbody></table>
+		<table id="autoMagic-Table"		class="table"><thead><tr><th colspan="2">Auto Affix		</th></tr></thead><tbody></tbody></table>-->
+
+        <table id="pickit-Table" class="table">
+            <thead>
+                <tr>
+                    <th colspan="1">Pickit</th>
+                </tr>
+            </thead>
+
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div id="middle" class="middle" title="Click to save image"></div>
+</body>
+
+<button id="clear" class="button"><h3 class="buttontext">CLEAR</h3></button>
+<button id="save" class="button"><h3 class="buttontext">SAVE D2I</h3></button>
