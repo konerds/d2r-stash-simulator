@@ -1,3 +1,15 @@
+import './app.css';
+
+import imgFont16 from './assets/images/font16.png';
+import imgHand from './assets/images/hand.png';
+import imgGemSocket from './assets/images/gemsocket.png';
+import imgBgnd1 from './assets/images/bgnd1.png';
+import imgBgnd2 from './assets/images/bgnd2.png';
+import imgBgnd3 from './assets/images/bgnd3.png';
+import imgBgnd4 from './assets/images/bgnd4.png';
+
+import txtMagicPrefix from './assets/mpq/MagicPrefix.txt';
+
 import { ARR_NAME_STAT } from './data/index.js';
 import { CHandlerBinary } from './utils/CHandlerBinary.js';
 
@@ -155,7 +167,7 @@ var Font16 = {
                 resolve(fonts);
             };
 
-            img.src = 'assets/images/font16.png';
+            img.src = imgFont16;
         }).then((result) => (Font16.font = result));
     },
 
@@ -205,24 +217,24 @@ var Font16 = {
 //Async file gets
 Promise.all([
     Font16.load(),
-    getFile('../assets/mpq/MagicPrefix.txt').then((str) => (window.magicPrefix = parseTable(str))),
-    getFile('../assets/mpq/MagicSuffix.txt').then((str) => (window.magicSuffix = parseTable(str))),
-    getFile('../assets/mpq/automagic.txt').then((str) => (window.autoMagic = parseTable(str))),
-    getFile('../assets/mpq/skills.txt').then((str) => (window.skills = parseTable(str))),
-    getFile('../assets/mpq/weapons.txt').then((str) => (window.weapons = parseTable(str))),
-    getFile('../assets/mpq/armor.txt').then((str) => (window.armor = parseTable(str))),
-    getFile('../assets/mpq/misc.txt').then((str) => (window.misc = parseTable(str))),
-    getFile('../assets/mpq/ItemTypes.txt').then((str) => (window.itemTypes = parseTable(str))),
-    getFile('../assets/mpq/cubemain.txt').then((str) => (window.cubeMain = parseTable(str))),
-    getFile('../assets/mpq/colors.txt').then((str) => (window.colors = parseTable(str))),
-    getFile('../assets/mpq/gamble.txt').then((str) => (window.gamble = parseTable(str))),
-    getFile('../assets/mpq/RarePrefix.txt').then((str) => (window.rarePrefix = parseTable(str))),
-    getFile('../assets/mpq/RareSuffix.txt').then((str) => (window.rareSuffix = parseTable(str))),
-    getFile('../assets/mpq/ItemStatCost.txt').then((str) => (window.itemStatCost = parseTable(str, true))),
-    getFile('../assets/mpq/Properties.txt').then((str) => (window.properties = parseTable(str, true))),
-    getFile('../assets/lang/' + lang + '/string.tbl', true).then((str) => (window.stringtbl = str)), // 390,570 bytes
-    getFile('../assets/lang/' + lang + '/expansionstring.tbl', true).then((str) => (window.expansionstringtbl = str)), // 173,234 bytes
-    getFile('../assets/lang/' + lang + '/patchstring.tbl', true).then((str) => (window.patchstringtbl = str)), // 35,678 bytes
+    getFile(txtMagicPrefix).then((str) => (window.magicPrefix = parseTable(str))),
+    getFile('./assets/mpq/MagicSuffix.txt').then((str) => (window.magicSuffix = parseTable(str))),
+    getFile('./assets/mpq/automagic.txt').then((str) => (window.autoMagic = parseTable(str))),
+    getFile('./assets/mpq/skills.txt').then((str) => (window.skills = parseTable(str))),
+    getFile('./assets/mpq/weapons.txt').then((str) => (window.weapons = parseTable(str))),
+    getFile('./assets/mpq/armor.txt').then((str) => (window.armor = parseTable(str))),
+    getFile('./assets/mpq/misc.txt').then((str) => (window.misc = parseTable(str))),
+    getFile('./assets/mpq/ItemTypes.txt').then((str) => (window.itemTypes = parseTable(str))),
+    getFile('./assets/mpq/cubemain.txt').then((str) => (window.cubeMain = parseTable(str))),
+    getFile('./assets/mpq/colors.txt').then((str) => (window.colors = parseTable(str))),
+    getFile('./assets/mpq/gamble.txt').then((str) => (window.gamble = parseTable(str))),
+    getFile('./assets/mpq/RarePrefix.txt').then((str) => (window.rarePrefix = parseTable(str))),
+    getFile('./assets/mpq/RareSuffix.txt').then((str) => (window.rareSuffix = parseTable(str))),
+    getFile('./assets/mpq/ItemStatCost.txt').then((str) => (window.itemStatCost = parseTable(str, true))),
+    getFile('./assets/mpq/Properties.txt').then((str) => (window.properties = parseTable(str, true))),
+    getFile('./assets/lang/' + lang + '/string.tbl', true).then((str) => (window.stringtbl = str)), // 390,570 bytes
+    getFile('./assets/lang/' + lang + '/expansionstring.tbl', true).then((str) => (window.expansionstringtbl = str)), // 173,234 bytes
+    getFile('./assets/lang/' + lang + '/patchstring.tbl', true).then((str) => (window.patchstringtbl = str)), // 35,678 bytes
 ])
     .then(() => parseLocales())
     .then(() => build());
@@ -545,34 +557,34 @@ var ItemScreenshot = {
 
     hand: function () {
         let img = new Image();
-        img.src = 'assets/images/hand.png';
+        img.src = imgHand;
         return img;
     }.call(),
     socket: function () {
         let img = new Image();
-        img.src = 'assets/images/gemsocket.png';
+        img.src = imgGemSocket;
         return img;
     }.call(),
 
     bgnd: [
         function () {
             let img = new Image();
-            img.src = 'assets/images/bgnd1.png';
+            img.src = imgBgnd1;
             return img;
         }.call(),
         function () {
             let img = new Image();
-            img.src = 'assets/images/bgnd2.png';
+            img.src = imgBgnd2;
             return img;
         }.call(),
         function () {
             let img = new Image();
-            img.src = 'assets/images/bgnd3.png';
+            img.src = imgBgnd3;
             return img;
         }.call(),
         function () {
             let img = new Image();
-            img.src = 'assets/images/bgnd4.png';
+            img.src = imgBgnd4;
             return img;
         }.call(),
     ],
@@ -867,7 +879,9 @@ var ItemScreenshot = {
             if (this.debug) console.log('Creating item screenshot took ' + (Date.now() - iStart) + 'ms');
         };
 
-        image.src = 'assets/gfx/' + info.image + '/' + info.color.id + '.png';
+        import('./assets/gfx/' + info.image + '/' + info.color.id + '.png').then((imgDynamic) => {
+            image.src = imgDynamic;
+        });
     },
 };
 
