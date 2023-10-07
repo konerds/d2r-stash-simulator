@@ -20,21 +20,6 @@ module.exports = merge(configCommon, {
                 test: /\.css$/,
                 use: ['style-loader', 'css-loader'],
             },
-            /** For Webpack 5 */
-            {
-                test: /\.(png|jpg|jpeg|gif|svg)$/,
-                type: 'asset',
-                parser: {
-                    dataUrlCondition: {
-                        maxSize: 20 * 1024,
-                    },
-                },
-            },
-            {
-                test: /\.js$/,
-                loader: 'babel-loader',
-                exclude: /node_modules/,
-            },
         ],
     },
     plugins: [
@@ -51,6 +36,8 @@ module.exports = merge(configCommon, {
             templateParameters: {
                 env: ' (For developing)',
             },
+            hash: true,
+            favicon: './src/favicon.png',
         }),
         new CleanWebpackPlugin(),
     ],

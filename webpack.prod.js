@@ -28,20 +28,6 @@ module.exports = merge(configCommon, {
                 test: /\.css$/,
                 use: [MiniCssExtractPlugin.loader, 'css-loader'],
             },
-            {
-                test: /\.(png|jpg|jpeg|gif|svg)$/,
-                type: 'asset',
-                parser: {
-                    dataUrlCondition: {
-                        maxSize: 20 * 1024,
-                    },
-                },
-            },
-            {
-                test: /\.js$/,
-                loader: 'babel-loader',
-                exclude: /node_modules/,
-            },
         ],
     },
     plugins: [
@@ -57,6 +43,8 @@ module.exports = merge(configCommon, {
             templateParameters: {
                 env: '',
             },
+            hash: true,
+            favicon: './src/favicon.png',
             minify: {
                 collapseWhitespace: true,
                 removeComments: true,

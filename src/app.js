@@ -9,9 +9,28 @@ import imgBgnd3 from './assets/images/bgnd3.png';
 import imgBgnd4 from './assets/images/bgnd4.png';
 
 import txtMagicPrefix from './assets/mpq/MagicPrefix.txt';
+import txtMagicSuffix from './assets/mpq/MagicSuffix.txt';
+import txtAutomagic from './assets/mpq/automagic.txt';
+import txtSkills from './assets/mpq/skills.txt';
+import txtWeapons from './assets/mpq/weapons.txt';
+import txtArmor from './assets/mpq/armor.txt';
+import txtMisc from './assets/mpq/misc.txt';
+import txtItemTypes from './assets/mpq/ItemTypes.txt';
+import txtCubemain from './assets/mpq/cubemain.txt';
+import txtColors from './assets/mpq/colors.txt';
+import txtGamble from './assets/mpq/gamble.txt';
+import txtRarePrefix from './assets/mpq/RarePrefix.txt';
+import txtRareSuffix from './assets/mpq/RareSuffix.txt';
+import txtItemStatCost from './assets/mpq/ItemStatCost.txt';
+import txtProperties from './assets/mpq/Properties.txt';
+
+import tblString from './assets/lang/eng/string.tbl';
+import tblExpansionstring from './assets/lang/eng/expansionstring.tbl';
+import tblPatchstring from './assets/lang/eng/patchstring.tbl';
 
 import { ARR_NAME_STAT } from './data/index.js';
-import { CHandlerBinary } from './utils/CHandlerBinary.js';
+import { CHandlerBinary } from './utils/index';
+import { parseTable } from './utils/index';
 
 var lang = 'eng';
 var affixGroups = [['p1', 'p2', 'p3'], ['s1', 's2', 's3'], ['smod1', 'smod2', 'smod3'], ['autoaffix'], ['craft']];
@@ -215,28 +234,33 @@ var Font16 = {
 };
 
 //Async file gets
-Promise.all([
-    Font16.load(),
-    getFile(txtMagicPrefix).then((str) => (window.magicPrefix = parseTable(str))),
-    getFile('./assets/mpq/MagicSuffix.txt').then((str) => (window.magicSuffix = parseTable(str))),
-    getFile('./assets/mpq/automagic.txt').then((str) => (window.autoMagic = parseTable(str))),
-    getFile('./assets/mpq/skills.txt').then((str) => (window.skills = parseTable(str))),
-    getFile('./assets/mpq/weapons.txt').then((str) => (window.weapons = parseTable(str))),
-    getFile('./assets/mpq/armor.txt').then((str) => (window.armor = parseTable(str))),
-    getFile('./assets/mpq/misc.txt').then((str) => (window.misc = parseTable(str))),
-    getFile('./assets/mpq/ItemTypes.txt').then((str) => (window.itemTypes = parseTable(str))),
-    getFile('./assets/mpq/cubemain.txt').then((str) => (window.cubeMain = parseTable(str))),
-    getFile('./assets/mpq/colors.txt').then((str) => (window.colors = parseTable(str))),
-    getFile('./assets/mpq/gamble.txt').then((str) => (window.gamble = parseTable(str))),
-    getFile('./assets/mpq/RarePrefix.txt').then((str) => (window.rarePrefix = parseTable(str))),
-    getFile('./assets/mpq/RareSuffix.txt').then((str) => (window.rareSuffix = parseTable(str))),
-    getFile('./assets/mpq/ItemStatCost.txt').then((str) => (window.itemStatCost = parseTable(str, true))),
-    getFile('./assets/mpq/Properties.txt').then((str) => (window.properties = parseTable(str, true))),
-    getFile('./assets/lang/' + lang + '/string.tbl', true).then((str) => (window.stringtbl = str)), // 390,570 bytes
-    getFile('./assets/lang/' + lang + '/expansionstring.tbl', true).then((str) => (window.expansionstringtbl = str)), // 173,234 bytes
-    getFile('./assets/lang/' + lang + '/patchstring.tbl', true).then((str) => (window.patchstringtbl = str)), // 35,678 bytes
-])
-    .then(() => parseLocales())
+Font16.load()
+    .then(() => {
+        window.magicPrefix = parseTable(txtMagicPrefix);
+        window.magicSuffix = parseTable(txtMagicSuffix);
+        window.autoMagic = parseTable(txtAutomagic);
+        window.skills = parseTable(txtSkills);
+        window.weapons = parseTable(txtWeapons);
+        window.armor = parseTable(txtArmor);
+        window.misc = parseTable(txtMisc);
+        window.itemTypes = parseTable(txtItemTypes);
+        window.cubeMain = parseTable(txtCubemain);
+        window.colors = parseTable(txtColors);
+        window.gamble = parseTable(txtGamble);
+        window.rarePrefix = parseTable(txtRarePrefix);
+        window.rareSuffix = parseTable(txtRareSuffix);
+        window.itemStatCost = parseTable(txtItemStatCost, true);
+        window.properties = parseTable(txtProperties, true);
+
+        // 390,570 bytes
+        window.stringtbl = new Uint8Array(tblString);
+        // 173,234 bytes
+        window.expansionstringtbl = new Uint8Array(tblExpansionstring);
+        // 35,678 bytes
+        window.patchstringtbl = new Uint8Array(tblPatchstring);
+
+        parseLocales();
+    })
     .then(() => build());
 
 function saveD2i() {
@@ -880,7 +904,7 @@ var ItemScreenshot = {
         };
 
         import('./assets/gfx/' + info.image + '/' + info.color.id + '.png').then((imgDynamic) => {
-            image.src = imgDynamic;
+            image.src = imgDynamic.default;
         });
     },
 };
@@ -1214,57 +1238,6 @@ function getItemTypes() {
             }
         }
     }
-}
-
-function parseTable(table, mode = false) {
-    let string = table.replace(/_|"/g, ''), //.toLowerCase(),
-        lines = string.split('\r\n'),
-        columns = lines.shift().toLowerCase().split('	'), // Column names lowercased ONLY
-        rows = !mode ? [] : {},
-        row = {},
-        expansion = string.indexOf('Expansion') === -1 ? 1 : 0,
-        rowData,
-        i;
-    lines.pop();
-    for (i = 0; i < lines.length; i++) {
-        rowData = lines[i].split('	');
-        if (rowData[0] == 'Expansion') {
-            expansion = 1;
-            continue;
-        }
-        row = {};
-        for (var n = 0; n < rowData.length; n++) {
-            if (row[columns[n]]) continue;
-            row[columns[n]] = isNaN(+rowData[n]) ? rowData[n] : +rowData[n];
-        }
-        row.expansion = expansion;
-        if (!mode) rows.push(row);
-        if (mode) rows[rowData[0]] = row;
-    }
-    console.log('Parsed table with ' + (rows.length || Object.keys(rows).length) + ' rows');
-    //console.log(rows);
-    return rows;
-}
-
-function getFile(path, binary = false) {
-    return new Promise(function (resolve, reject) {
-        let file = new XMLHttpRequest();
-        if (binary) file.responseType = 'arraybuffer';
-        file.onreadystatechange = function () {
-            if (file.readyState === 4) {
-                if (file.status === 200) {
-                    //console.log("Loaded file " + path);
-                    if (binary) {
-                        resolve(new Uint8Array(file.response));
-                    } else {
-                        resolve(file.responseText);
-                    }
-                }
-            }
-        };
-        file.open('GET', path, true);
-        file.send();
-    });
 }
 
 function getMaxAffixCount() {
