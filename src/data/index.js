@@ -1,4 +1,6 @@
-export const ARR_NAME_STAT = {
+export const LANGUAGE_CURRENT = 'eng';
+
+export const objNameStat = {
     ac: 'defense',
     'ac-miss': 'armorclassvsmissile',
     'ac-hth': 'armorclassvshth',
@@ -268,3 +270,146 @@ export const ARR_NAME_STAT = {
     state: 'state',
     randclassskill: 'itemaddclassskills',
 };
+
+export const listGroupAffix = [
+    ['p1', 'p2', 'p3'],
+    ['s1', 's2', 's3'],
+    ['smod1', 'smod2', 'smod3'],
+    ['autoaffix'],
+    ['craft'],
+];
+
+export const listGroupAvoid = [[[], [], []], [[], [], []], [[], [], []], [[]], [[]]];
+
+export const listClass = ['Amazon', 'Sorceress', 'Necromancer', 'Paladin', 'Barbarian', 'Druid', 'Assassin'];
+export const listCodeClass = ['ama', 'sor', 'nec', 'pal', 'bar', 'dru', 'ass'];
+
+export const objTableColor = {};
+export const listLocale = {};
+
+export let objStat = {};
+export const setObjStat = (objNew) => {
+    objStat = Object.assign({}, objNew);
+};
+
+export let objStatDefense = {};
+export const setObjStatDefense = (objNew) => {
+    objStatDefense = Object.assign({}, objNew);
+};
+
+export let listStatOffense = [];
+export const setListStatOffense = (listNew) => {
+    listStatOffense = [...listNew];
+};
+
+export let objValueTable = {};
+export const setObjValueTable = (objNew) => {
+    objValueTable = Object.assign({}, objNew);
+};
+
+// export const objValueInitial = {};
+
+export let listImplicit = [];
+export const setListImplicit = (listNew) => {
+    listImplicit = [...listNew];
+};
+
+export let listExplicit = [];
+export const setListExplicit = (listNew) => {
+    listExplicit = [...listNew];
+};
+
+export let isLoadedFirst = true;
+export const setIsLoadedFirst = (valueNew) => {
+    isLoadedFirst = valueNew;
+};
+
+export let objDefault;
+export const setObjDefault = (objNew) => {
+    objDefault = Object.assign({}, objNew);
+};
+
+export let objPrefix;
+export const setObjPrefix = (objNew) => {
+    objPrefix = Object.assign({}, objNew);
+};
+
+export let objSuffix;
+export const setObjSuffix = (objNew) => {
+    objSuffix = Object.assign({}, objNew);
+};
+
+export const objItemCurrent = {
+    // User selected
+    namepre: 2, // "Raven"
+    namesuf: 79, // "Guard"
+    quality: 6, // Rare
+    classid: 448, // Aegis
+    ethereal: 0,
+    expansion: 1,
+    level: 99,
+    charlvl: 99,
+    charclassid: 0, // Amazon default
+    autoaffix: -1,
+    p1: -1,
+    p2: -1,
+    p3: -1,
+    s1: -1,
+    s2: -1,
+    s3: -1,
+    smod1: -1,
+    smod2: -1,
+    smod3: -1,
+
+    // Calculated
+    invfile: 'invtow',
+    minlevel: 0, // Minimum item level to get all affixes on this item
+    alvl: 0, // Minimum affix level
+    crafts: [], // Craft rows
+    craft: -1,
+    type: 'shie',
+    types: [],
+    class: '',
+    staffmods: '',
+    autogroup: 0,
+    amax: 6,
+    pmax: 3,
+    smax: 3,
+    pnum: 0,
+    snum: 0,
+    anum: 0,
+    pickit: '',
+    title: 'item',
+    icolor: { name: 'none', id: 21 }, // Item color id (inventory)
+    ecolor: { name: 'none', id: 21 }, // Item color id (when worn)
+};
+
+export const listTabSkill = [
+    'StrSklTabItem3', // 0 Bow			0
+    'StrSklTabItem2', // 1 P&M
+    'StrSklTabItem1', // 2 Jav
+
+    'StrSklTabItem15', // 3 Fire			1
+    'StrSklTabItem14', // 4 Light
+    'StrSklTabItem13', // 5 Cold
+
+    'StrSklTabItem8', // 6 Curse			2
+    'StrSklTabItem7', // 7 P&B
+    'StrSklTabItem6', // 8 NSum
+
+    'StrSklTabItem11', // 9 PComb			3
+    'StrSklTabItem5', // 10 Off
+    'StrSklTabItem4', // 11 Def
+
+    'StrSklTabItem11', // 12 BComb			4
+    'StrSklTabItem12', // 13 Mast
+    'StrSklTabItem10', // 14 WC
+
+    'StrSklTabItem16', // 15 DSum			5
+    'StrSklTabItem17', // 16 SS
+    'StrSklTabItem18', // 17 Ele
+
+    'StrSklTabItem19', // 18 Trap			6
+    'StrSklTabItem20', // 19 Shadow
+    'StrSklTabItem21', // 20 MA
+];

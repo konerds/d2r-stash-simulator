@@ -28,103 +28,40 @@ import tblString from './assets/lang/eng/string.tbl';
 import tblExpansionstring from './assets/lang/eng/expansionstring.tbl';
 import tblPatchstring from './assets/lang/eng/patchstring.tbl';
 
-import { ARR_NAME_STAT } from './data/index.js';
+import {
+    objNameStat,
+    LANGUAGE_CURRENT,
+    listGroupAffix,
+    listGroupAvoid,
+    listClass,
+    listCodeClass,
+    objPrefix,
+    objSuffix,
+    objTableColor,
+    listLocale,
+    objStat,
+    setObjStat,
+    objStatDefense,
+    setObjStatDefense,
+    listStatOffense,
+    setListStatOffense,
+    listImplicit,
+    isLoadedFirst,
+    setObjDefault,
+    objItemCurrent,
+    listTabSkill,
+    objValueTable,
+    objDefault,
+    setObjPrefix,
+    setObjSuffix,
+    listExplicit,
+    setListExplicit,
+    setListImplicit,
+    setObjValueTable,
+    setIsLoadedFirst,
+} from './data/index.js';
 import { CHandlerBinary } from './utils/index';
 import { parseTable } from './utils/index';
-
-var lang = 'eng';
-var affixGroups = [['p1', 'p2', 'p3'], ['s1', 's2', 's3'], ['smod1', 'smod2', 'smod3'], ['autoaffix'], ['craft']];
-var avoidGroups = [[[], [], []], [[], [], []], [[], [], []], [[]], [[]]];
-var classes = ['Amazon', 'Sorceress', 'Necromancer', 'Paladin', 'Barbarian', 'Druid', 'Assassin'];
-var classCodes = ['ama', 'sor', 'nec', 'pal', 'bar', 'dru', 'ass'];
-var colorTable = {},
-    locales = {},
-    stats = {},
-    dstats = {},
-    ostats = {},
-    tval = {},
-    ival = {},
-    implicits = [],
-    explicits = [],
-    firstLoad = true,
-    defaults,
-    pobj,
-    sobj;
-
-var item = {
-    //User selected
-    namepre: 2, // "Raven"
-    namesuf: 79, // "Guard"
-    quality: 6, // Rare
-    classid: 448, // Aegis
-    ethereal: 0,
-    expansion: 1,
-    level: 99,
-    charlvl: 99,
-    charclassid: 0, // Amazon default
-    autoaffix: -1,
-    p1: -1,
-    p2: -1,
-    p3: -1,
-    s1: -1,
-    s2: -1,
-    s3: -1,
-    smod1: -1,
-    smod2: -1,
-    smod3: -1,
-
-    //Calculated
-    invfile: 'invtow',
-    minlevel: 0, //minimum item level to get all affixes on this item
-    alvl: 0, //minimum affix level
-    crafts: [], //Craft rows
-    craft: -1,
-    type: 'shie',
-    types: [],
-    class: '',
-    staffmods: '',
-    autogroup: 0,
-    amax: 6,
-    pmax: 3,
-    smax: 3,
-    pnum: 0,
-    snum: 0,
-    anum: 0,
-    pickit: '',
-    title: 'item',
-    icolor: { name: 'none', id: 21 }, // Item color id (inventory)
-    ecolor: { name: 'none', id: 21 }, // Item color id (when worn)
-};
-
-var skillTabs = [
-    'StrSklTabItem3', // 0 Bow			0
-    'StrSklTabItem2', // 1 P&M
-    'StrSklTabItem1', // 2 Jav
-
-    'StrSklTabItem15', // 3 Fire			1
-    'StrSklTabItem14', // 4 Light
-    'StrSklTabItem13', // 5 Cold
-
-    'StrSklTabItem8', // 6 Curse			2
-    'StrSklTabItem7', // 7 P&B
-    'StrSklTabItem6', // 8 NSum
-
-    'StrSklTabItem11', // 9 PComb			3
-    'StrSklTabItem5', // 10 Off
-    'StrSklTabItem4', // 11 Def
-
-    'StrSklTabItem11', // 12 BComb			4
-    'StrSklTabItem12', // 13 Mast
-    'StrSklTabItem10', // 14 WC
-
-    'StrSklTabItem16', // 15 DSum			5
-    'StrSklTabItem17', // 16 SS
-    'StrSklTabItem18', // 17 Ele
-
-    'StrSklTabItem19', // 18 Trap			6
-    'StrSklTabItem20', // 19 Shadow
-    'StrSklTabItem21', // 20 MA
-];
 
 var Font16 = {
     kerning: [
@@ -265,9 +202,9 @@ Font16.load()
 
 function saveD2i() {
     var br = new CHandlerBinary(),
-        base = baseTypes[item.classid],
+        base = baseTypes[objItemCurrent.classid],
         code = base.code,
-        sock = Math.min(item.maxsockets, stats['sock'] || 0),
+        sock = Math.min(objItemCurrent.maxsockets, objStat['sock'] || 0),
         a,
         val;
 
@@ -283,7 +220,7 @@ function saveD2i() {
     br.bits(0, 1); // Starter item
     br.bits(0, 3); // ?
     br.bits(0, 1); // Simple
-    br.bits(item.ethereal, 1); // Ethereal
+    br.bits(objItemCurrent.ethereal, 1); // Ethereal
     br.bits(0, 1); // ?
     br.bits(0, 1); // Personalized
     br.bits(0, 1); // ?
@@ -301,49 +238,49 @@ function saveD2i() {
     br.bits(32, 8); // Code[3]
     br.bits(0, 3); // Socketed item #
     br.bits(0, 32); // ?
-    br.bits(item.level, 7); // ilvl
-    br.bits(item.quality, 4); // Quality
+    br.bits(objItemCurrent.level, 7); // ilvl
+    br.bits(objItemCurrent.quality, 4); // Quality
     br.bits(0, 1); // Custom gfx?
 
-    if (item.autoaffix + 1) {
+    if (objItemCurrent.autoaffix + 1) {
         br.bits(1, 1); // Autoaffix?
-        br.bits(item.autoaffix + 1, 11); // Autoaffix index
+        br.bits(objItemCurrent.autoaffix + 1, 11); // Autoaffix index
     } else {
         br.bits(0, 1);
     }
 
-    switch (item.quality) {
+    switch (objItemCurrent.quality) {
         case 4:
-            br.bits(item.p1 + 1 ? item.p1 + 1 : 0, 11); // ? name prefix??
-            br.bits(item.s1 + 1 ? item.s1 + 1 : 0, 11); // ? name suffix??
+            br.bits(objItemCurrent.p1 + 1 ? objItemCurrent.p1 + 1 : 0, 11); // ? name prefix??
+            br.bits(objItemCurrent.s1 + 1 ? objItemCurrent.s1 + 1 : 0, 11); // ? name suffix??
             break;
         case 6:
         case 8:
-            br.bits(item.namepre + 1 ? item.namepre + 156 : 0, 8);
-            br.bits(item.namesuf + 1 ? item.namesuf + 1 : 0, 8);
-            if (item.p1 + 1) {
+            br.bits(objItemCurrent.namepre + 1 ? objItemCurrent.namepre + 156 : 0, 8);
+            br.bits(objItemCurrent.namesuf + 1 ? objItemCurrent.namesuf + 1 : 0, 8);
+            if (objItemCurrent.p1 + 1) {
                 br.bits(1, 1);
-                br.bits(item.p1 + 1, 11);
+                br.bits(objItemCurrent.p1 + 1, 11);
             } else br.bits(0, 1);
-            if (item.s1 + 1) {
+            if (objItemCurrent.s1 + 1) {
                 br.bits(1, 1);
-                br.bits(item.s1 + 1, 11);
+                br.bits(objItemCurrent.s1 + 1, 11);
             } else br.bits(0, 1);
-            if (item.p2 + 1) {
+            if (objItemCurrent.p2 + 1) {
                 br.bits(1, 1);
-                br.bits(item.p2 + 1, 11);
+                br.bits(objItemCurrent.p2 + 1, 11);
             } else br.bits(0, 1);
-            if (item.s2 + 1) {
+            if (objItemCurrent.s2 + 1) {
                 br.bits(1, 1);
-                br.bits(item.s2 + 1, 11);
+                br.bits(objItemCurrent.s2 + 1, 11);
             } else br.bits(0, 1);
-            if (item.p3 + 1) {
+            if (objItemCurrent.p3 + 1) {
                 br.bits(1, 1);
-                br.bits(item.p3 + 1, 11);
+                br.bits(objItemCurrent.p3 + 1, 11);
             } else br.bits(0, 1);
-            if (item.s3 + 1) {
+            if (objItemCurrent.s3 + 1) {
                 br.bits(1, 1);
-                br.bits(item.s3 + 1, 11);
+                br.bits(objItemCurrent.s3 + 1, 11);
             } else br.bits(0, 1);
             break;
     }
@@ -351,17 +288,22 @@ function saveD2i() {
     //br.bits(0, 5); // Only applies to tp and id tomes
     br.bits(0, 1);
 
-    if (item.classid > 305 && item.classid < 508) {
+    if (objItemCurrent.classid > 305 && objItemCurrent.classid < 508) {
         // Is from armor table
-        val = stats['ac%'] || stats['ac%/lvl'] ? base.maxac + 1 : base.maxac;
-        if (val && [91, 92, 93, 94].indexOf(item.craft) !== -1 && dstats['ac%'].affix.hasOwnProperty('name')) val += 1; // Thanks @Kaylin
-        if (val && item.ethereal) val = Math.floor(val * 1.5);
+        val = objStat['ac%'] || objStat['ac%/lvl'] ? base.maxac + 1 : base.maxac;
+        if (
+            val &&
+            [91, 92, 93, 94].indexOf(objItemCurrent.craft) !== -1 &&
+            objStatDefense['ac%'].affix.hasOwnProperty('name')
+        )
+            val += 1; // Thanks @Kaylin
+        if (val && objItemCurrent.ethereal) val = Math.floor(val * 1.5);
         br.bits((val || 0) + 10, 11); // Defense
     }
 
-    if (item.classid < 508) {
+    if (objItemCurrent.classid < 508) {
         // Is from wep/armor table
-        val = tval.durability || 0;
+        val = objValueTable.durability || 0;
         br.bits(val, 8); // Dura
         if (val) br.bits(val, 9); // Maxdura
     }
@@ -374,13 +316,13 @@ function saveD2i() {
 
     var bstats = {},
         cstats = {};
-    for (a in dstats) bstats[a] = dstats[a];
+    for (a in objStatDefense) bstats[a] = objStatDefense[a];
     if (bstats.hasOwnProperty('res-all')) {
         let composite = ['res-fire', 'res-cold', 'res-ltng', 'res-pois'];
 
         for (let i = 0; i < composite.length; i++) {
             bstats[composite[i]] = {};
-            bstats[composite[i]].value = dstats['res-all'].value;
+            bstats[composite[i]].value = objStatDefense['res-all'].value;
             bstats[composite[i]].modcode = composite[i];
             bstats[composite[i]].properties = properties[composite[i]];
             bstats[composite[i]].itemstat = itemStatCost[modcodeToItemStat(composite[i])];
@@ -469,7 +411,7 @@ function saveD2i() {
                 val = Math.max(
                     1,
                     Math.floor(
-                        (item.level - skills[stat.value].reqlevel) /
+                        (objItemCurrent.level - skills[stat.value].reqlevel) /
                             Math.floor((99 - skills[stat.value].reqlevel) / Math.abs(stat.modmax))
                     )
                 );
@@ -505,7 +447,7 @@ function saveD2i() {
                 break;
 
             case 'maxdamage':
-                if (item.types.indexOf('char') !== -1 || item.types.indexOf('jewl') !== -1) {
+                if (objItemCurrent.types.indexOf('char') !== -1 || objItemCurrent.types.indexOf('jewl') !== -1) {
                     br.bits(22, 9); // 1h max
                     br.bits(stat.value + stat['save add'], stat['save bits']);
                     br.bits(24, 9); // 2h max
@@ -528,7 +470,7 @@ function saveD2i() {
                 break;
 
             case 'mindamage':
-                if (item.types.indexOf('char') !== -1 || item.types.indexOf('jewl') !== -1) {
+                if (objItemCurrent.types.indexOf('char') !== -1 || objItemCurrent.types.indexOf('jewl') !== -1) {
                     br.bits(21, 9); // 1h min
                     br.bits(stat.value + stat['save add'], stat['save bits']);
                     br.bits(23, 9); // 2h min
@@ -563,7 +505,7 @@ function saveD2i() {
 
     a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([br.finish()], { type: 'application/octet-stream' }));
-    a.download = item.title + '.d2i';
+    a.download = objItemCurrent.title + '.d2i';
     a.click();
 }
 
@@ -935,7 +877,7 @@ var param = {
         for (let i = 0; i < pairs.length; i++) {
             if (!pairs[i]) continue;
             let pair = pairs[i].split('=');
-            item[pair[0]] = +pair[1];
+            objItemCurrent[pair[0]] = +pair[1];
             if (pair[0].indexOf('range') > -1) {
                 document.getElementById(pair[0]).value = +pair[1];
             } else {
@@ -945,7 +887,7 @@ var param = {
     },
     setAll: function () {
         window.location.hash = '';
-        for (var key in item) {
+        for (var key in objItemCurrent) {
             //if (["type","types","class","staffmods","autogroup","amax","pmax","smax","pnum","snum","anum","maxsockets"].indexOf(key) > -1) continue;
             if (
                 [
@@ -973,9 +915,9 @@ var param = {
                 key.indexOf('range') === -1
             )
                 continue;
-            if (!defaults.hasOwnProperty(key) || item[key] !== defaults[key]) {
+            if (!objDefault.hasOwnProperty(key) || objItemCurrent[key] !== objDefault[key]) {
                 //console.log(key);
-                this.set(key, item[key]);
+                this.set(key, objItemCurrent[key]);
             }
         }
     },
@@ -1017,7 +959,7 @@ function parseLocale(bytestream) {
         var key = readCString(dr, keyOffset); //.toLowerCase();
         var val = readCString(dr, strOffset); //.toLowerCase();
 
-        locales[key] = val;
+        listLocale[key] = val;
     }
 
     return true;
@@ -1028,11 +970,11 @@ function parseLocales() {
     parseLocale(window.stringtbl.buffer);
     parseLocale(window.expansionstringtbl.buffer);
     parseLocale(window.patchstringtbl.buffer);
-    locales['strModEnhancedDamage'] = 'Enhanced Damage';
-    locales['skillname61'] = locales['skillsname61'];
-    locales['Skillname223'] = 'Poison Creeper';
-    console.log('Parsed locales (' + lang + ')');
-    //console.log(locales);
+    listLocale['strModEnhancedDamage'] = 'Enhanced Damage';
+    listLocale['skillname61'] = listLocale['skillsname61'];
+    listLocale['Skillname223'] = 'Poison Creeper';
+    console.log('Parsed listLocale (' + LANGUAGE_CURRENT + ')');
+    //console.log(listLocale);
 }
 
 function reload() {
@@ -1041,7 +983,7 @@ function reload() {
 }
 
 function hideSelect(select) {
-    item[select] = -1;
+    objItemCurrent[select] = -1;
     document.getElementById(select + '-Div').style.display = 'none';
     document.getElementById(select + '-Select').value = -1;
     document.getElementById(select + '-range1Div').style.display = 'none';
@@ -1081,11 +1023,11 @@ function build() {
 
     console.log('Building menus');
     window.baseTypes = weapons.concat(armor, misc);
-    defaults = Object.assign({}, item);
+    setObjDefault(objItemCurrent);
 
     sortedTypes = Object.assign([], baseTypes);
     for (let n = 0; n < sortedTypes.length; n++) {
-        sortedTypes[n].locale = locales[sortedTypes[n].namestr] || sortedTypes[n].name;
+        sortedTypes[n].locale = listLocale[sortedTypes[n].namestr] || sortedTypes[n].name;
         sortedTypes[n].value = n;
     }
     sortedTypes.sort((a, b) => (a.locale > b.locale ? 1 : -1));
@@ -1114,7 +1056,7 @@ function build() {
             if (!magicPrefix[i].name) continue;
             if (!magicPrefix[i].spawnable) continue;
             option = document.createElement('option');
-            option.text = locales[magicPrefix[i].name] + ' (' + magicPrefix[i].mod1code + ')';
+            option.text = listLocale[magicPrefix[i].name] + ' (' + magicPrefix[i].mod1code + ')';
             option.value = i;
             option.id = 'p' + (n + 1) + '-' + i;
             select.add(option);
@@ -1128,7 +1070,7 @@ function build() {
             if (!magicSuffix[i].name) continue;
             if (!magicSuffix[i].spawnable) continue;
             option = document.createElement('option');
-            option.text = locales[magicSuffix[i].name] + ' (' + magicSuffix[i].mod1code + ')';
+            option.text = listLocale[magicSuffix[i].name] + ' (' + magicSuffix[i].mod1code + ')';
             option.value = i;
             option.id = 's' + (n + 1) + '-' + i;
             select.add(option);
@@ -1138,7 +1080,7 @@ function build() {
     select = document.getElementById('namepre-Select'); // Rareprefixes
     for (let i = 0; i < rarePrefix.length; i++) {
         option = document.createElement('option');
-        option.text = locales[rarePrefix[i].name] || rarePrefix[i].name;
+        option.text = listLocale[rarePrefix[i].name] || rarePrefix[i].name;
         option.value = i;
         option.id = 'namepre-' + i;
         if (i === 2) option.selected = true;
@@ -1148,7 +1090,7 @@ function build() {
     select = document.getElementById('namesuf-Select'); // Raresuffixes
     for (let i = 0; i < rareSuffix.length; i++) {
         option = document.createElement('option');
-        option.text = locales[rareSuffix[i].name] || rareSuffix[i].name;
+        option.text = listLocale[rareSuffix[i].name] || rareSuffix[i].name;
         option.value = i;
         option.id = 'namesuf-' + i;
         if (i === 79) option.selected = true;
@@ -1159,7 +1101,7 @@ function build() {
     for (let i = 0; i < autoMagic.length; i++) {
         if (!autoMagic[i].name) continue;
         option = document.createElement('option');
-        option.text = locales[autoMagic[i].name] + '   (' + autoMagic[i].mod1code + ')';
+        option.text = listLocale[autoMagic[i].name] + '   (' + autoMagic[i].mod1code + ')';
         option.value = i;
         option.id = 'autoaffix-' + i;
         select.add(option);
@@ -1170,7 +1112,7 @@ function build() {
         select = document.getElementById('smod' + (n + 1) + '-Select');
         for (let i = 0; i < skills.length; i++) {
             if (!skills[i].charclass) continue;
-            skills[i].name = locales['skillname' + i] || locales['Skillname' + (i + 1)];
+            skills[i].name = listLocale['skillname' + i] || listLocale['Skillname' + (i + 1)];
             option = document.createElement('option');
             //option.text = skills[i].skill + " (" + skills[i].charclass + ")";
             option.text = skills[i].name + ' (' + skills[i].charclass + ')';
@@ -1192,7 +1134,7 @@ function build() {
     }
 
     for (let i = 0; i < colors.length; i++) {
-        colorTable[colors[i].code] = {
+        objTableColor[colors[i].code] = {
             name: colors[i]['transform color'],
             id: i,
         };
@@ -1209,74 +1151,78 @@ function getItemTypes() {
         itemType,
         itemTypeEquiv,
         itemTypeEquivs = [];
-    item.staffmods = '';
-    item.types = [];
-    item.typeNames = [];
-    item.class = '';
+    objItemCurrent.staffmods = '';
+    objItemCurrent.types = [];
+    objItemCurrent.typeNames = [];
+    objItemCurrent.class = '';
     for (t = 0; t < itemTypes.length; t++) {
-        if (itemTypes[t].code == item.type) break;
+        if (itemTypes[t].code == objItemCurrent.type) break;
     }
     itemType = itemTypes[t]; //Original row of item type
-    if (itemType.magic && !itemType.rare) item.maxquality = 4;
-    if (itemType.rare) item.maxquality = 6;
-    item.maxsockets = Math.min(
-        baseTypes[item.classid].invwidth * baseTypes[item.classid].invheight,
-        (item.level <= 25 ? itemType.maxsock1 : 0) || (item.level >= 41 ? itemType.maxsock40 : 0) || itemType.maxsock25,
-        baseTypes[item.classid].gemsockets || 0
+    if (itemType.magic && !itemType.rare) objItemCurrent.maxquality = 4;
+    if (itemType.rare) objItemCurrent.maxquality = 6;
+    objItemCurrent.maxsockets = Math.min(
+        baseTypes[objItemCurrent.classid].invwidth * baseTypes[objItemCurrent.classid].invheight,
+        (objItemCurrent.level <= 25 ? itemType.maxsock1 : 0) ||
+            (objItemCurrent.level >= 41 ? itemType.maxsock40 : 0) ||
+            itemType.maxsock25,
+        baseTypes[objItemCurrent.classid].gemsockets || 0
     );
     itemTypeEquivs.push(itemType.code);
     while (itemTypeEquivs.length) {
         itemTypeEquiv = itemTypeEquivs.shift();
         for (i = 0; i < itemTypes.length; i++) {
             if (itemTypeEquiv == itemTypes[i].code) {
-                item.typeNames.push(itemTypes[i].itemtype);
-                item.types.push(itemTypes[i].code);
+                objItemCurrent.typeNames.push(itemTypes[i].itemtype);
+                objItemCurrent.types.push(itemTypes[i].code);
                 if (itemTypes[i].equiv1) itemTypeEquivs.push(itemTypes[i].equiv1);
                 if (itemTypes[i].equiv2) itemTypeEquivs.push(itemTypes[i].equiv2);
-                if (itemTypes[i].staffmods) item.staffmods = itemTypes[i].staffmods;
-                if (itemTypes[i].class) item.class = itemTypes[i].class;
+                if (itemTypes[i].staffmods) objItemCurrent.staffmods = itemTypes[i].staffmods;
+                if (itemTypes[i].class) objItemCurrent.class = itemTypes[i].class;
             }
         }
     }
 }
 
 function getMaxAffixCount() {
-    switch (item.quality) {
+    switch (objItemCurrent.quality) {
         case 6: //rare
-            item.amax = 6;
-            item.pmax = 3;
-            item.smax = 3;
+            objItemCurrent.amax = 6;
+            objItemCurrent.pmax = 3;
+            objItemCurrent.smax = 3;
 
-            if (item.classid === 643) {
+            if (objItemCurrent.classid === 643) {
                 //Is a jewel
-                item.amax = 4;
+                objItemCurrent.amax = 4;
             }
             break;
 
         case 8: //crafted
-            item.amax = 4;
-            item.pmax = 3;
-            item.smax = 3;
+            objItemCurrent.amax = 4;
+            objItemCurrent.pmax = 3;
+            objItemCurrent.smax = 3;
             break;
 
         default: //magic
-            item.amax = 2;
-            item.pmax = 1;
-            item.smax = 1;
+            objItemCurrent.amax = 2;
+            objItemCurrent.pmax = 1;
+            objItemCurrent.smax = 1;
     }
 }
 
 function getAffixCount() {
-    item.pnum = [item.p1, item.p2, item.p3].filter((k) => k !== -1).length;
-    item.snum = [item.s1, item.s2, item.s3].filter((k) => k !== -1).length;
-    item.anum = item.pnum + item.snum;
-    item.smodnum = [item.smod1, item.smod2, item.smod3].filter((k) => k !== -1).length;
+    objItemCurrent.pnum = [objItemCurrent.p1, objItemCurrent.p2, objItemCurrent.p3].filter((k) => k !== -1).length;
+    objItemCurrent.snum = [objItemCurrent.s1, objItemCurrent.s2, objItemCurrent.s3].filter((k) => k !== -1).length;
+    objItemCurrent.anum = objItemCurrent.pnum + objItemCurrent.snum;
+    objItemCurrent.smodnum = [objItemCurrent.smod1, objItemCurrent.smod2, objItemCurrent.smod3].filter(
+        (k) => k !== -1
+    ).length;
 }
 
 function getAvoidGroups(affix) {
-    for (let i = 0; i < affixGroups.length; i++) {
-        if (affixGroups[i].indexOf(affix) > -1) {
-            return avoidGroups[i][affixGroups[i].indexOf(affix)];
+    for (let i = 0; i < listGroupAffix.length; i++) {
+        if (listGroupAffix[i].indexOf(affix) > -1) {
+            return listGroupAvoid[i][listGroupAffix[i].indexOf(affix)];
         }
     }
 
@@ -1285,14 +1231,14 @@ function getAvoidGroups(affix) {
 
 function setAvoidGroups() {
     let i, n;
-    avoidGroups[0] = [[], [], []];
-    avoidGroups[1] = [[], [], []];
+    listGroupAvoid[0] = [[], [], []];
+    listGroupAvoid[1] = [[], [], []];
 
     for (i = 0; i < 3; i++) {
         //iterate the prefixes
         for (n = 0; n < 3; n++) {
-            if (i !== n && item[affixGroups[0][i]] !== -1) {
-                avoidGroups[0][n].push(magicPrefix[item[affixGroups[0][i]]].group);
+            if (i !== n && objItemCurrent[listGroupAffix[0][i]] !== -1) {
+                listGroupAvoid[0][n].push(magicPrefix[objItemCurrent[listGroupAffix[0][i]]].group);
             }
         }
     }
@@ -1300,8 +1246,8 @@ function setAvoidGroups() {
     for (i = 0; i < 3; i++) {
         //iterate the prefixes
         for (n = 0; n < 3; n++) {
-            if (i !== n && item[affixGroups[1][i]] !== -1) {
-                avoidGroups[1][n].push(magicSuffix[item[affixGroups[1][i]]].group);
+            if (i !== n && objItemCurrent[listGroupAffix[1][i]] !== -1) {
+                listGroupAvoid[1][n].push(magicSuffix[objItemCurrent[listGroupAffix[1][i]]].group);
             }
         }
     }
@@ -1314,18 +1260,18 @@ function filterAffixGroup(affixTable, affixGroup) {
 }
 
 function affixOverCap(affix) {
-    if (affix === 'p3' && item.pmax <= 2) return true;
-    if (affix === 'p2' && item.pmax <= 1) return true;
+    if (affix === 'p3' && objItemCurrent.pmax <= 2) return true;
+    if (affix === 'p2' && objItemCurrent.pmax <= 1) return true;
 
-    if (affix === 's3' && item.smax <= 2) return true;
-    if (affix === 's2' && item.smax <= 1) return true;
+    if (affix === 's3' && objItemCurrent.smax <= 2) return true;
+    if (affix === 's2' && objItemCurrent.smax <= 1) return true;
 
-    if (item.anum > item.amax) {
-        if (affix === 's2' && item.pnum >= 3) return true;
-        if (affix === 's3' && item.pnum >= 2) return true;
+    if (objItemCurrent.anum > objItemCurrent.amax) {
+        if (affix === 's2' && objItemCurrent.pnum >= 3) return true;
+        if (affix === 's3' && objItemCurrent.pnum >= 2) return true;
 
-        if (affix === 'p2' && item.snum >= 3) return true;
-        if (affix === 'p3' && item.snum >= 2) return true;
+        if (affix === 'p2' && objItemCurrent.snum >= 3) return true;
+        if (affix === 'p3' && objItemCurrent.snum >= 2) return true;
     }
 
     return false;
@@ -1345,9 +1291,9 @@ function filterAffixes(affixTable, affix) {
 
                 document.getElementById(affix + '-' + i).disabled = true;
 
-                if (!item.expansion) continue;
-                if (item.quality !== 8) continue;
-                if (item.crafts.indexOf(i) === -1) continue;
+                if (!objItemCurrent.expansion) continue;
+                if (objItemCurrent.quality !== 8) continue;
+                if (objItemCurrent.crafts.indexOf(i) === -1) continue;
 
                 document.getElementById(affix + '-' + i).disabled = false;
             }
@@ -1356,32 +1302,36 @@ function filterAffixes(affixTable, affix) {
         case 'smod1': //smods
         case 'smod2':
         case 'smod3':
-            //item[affix+'total'] = {1:0,6:0,12:0,18:0,24:0,30:0};
+            //objItemCurrent[affix+'total'] = {1:0,6:0,12:0,18:0,24:0,30:0};
 
             for (i = 0; i < affixTable.length; i++) {
                 if (!affixTable[i].charclass) continue;
 
                 document.getElementById(affix + '-' + i).disabled = true;
 
-                if (affixTable[i].charclass !== item.staffmods) continue;
-                //if ((affixTable[i].itypea1 && item.types.indexOf(affixTable[i].itypea1) === -1) &&
-                //	(affixTable[i].itypea2 && item.types.indexOf(affixTable[i].itypea2) === -1)) continue;
-                if (affix === 'smod1' && (item.smod2 === i || item.smod3 === i)) continue;
-                if (affix === 'smod2' && (item.smod1 === i || item.smod3 === i)) continue;
-                if (affix === 'smod3' && (item.smod1 === i || item.smod2 === i)) continue;
-                if (item.smodlevelreqs.indexOf(affixTable[i].reqlevel) === -1) continue;
+                if (affixTable[i].charclass !== objItemCurrent.staffmods) continue;
+                //if ((affixTable[i].itypea1 && objItemCurrent.types.indexOf(affixTable[i].itypea1) === -1) &&
+                //	(affixTable[i].itypea2 && objItemCurrent.types.indexOf(affixTable[i].itypea2) === -1)) continue;
+                if (affix === 'smod1' && (objItemCurrent.smod2 === i || objItemCurrent.smod3 === i)) continue;
+                if (affix === 'smod2' && (objItemCurrent.smod1 === i || objItemCurrent.smod3 === i)) continue;
+                if (affix === 'smod3' && (objItemCurrent.smod1 === i || objItemCurrent.smod2 === i)) continue;
+                if (objItemCurrent.smodlevelreqs.indexOf(affixTable[i].reqlevel) === -1) continue;
 
-                //item[affix+'total'][affixTable[i].reqlevel] += 1;
+                //objItemCurrent[affix+'total'][affixTable[i].reqlevel] += 1;
                 document.getElementById(affix + '-' + i).disabled = false;
             }
             break;
 
         default: //prefixes/suffixes/autoaffixes
-            item[affix + 'totalfreq'] = 0;
-            item[affix + 'groupfreq'] = 0;
+            objItemCurrent[affix + 'totalfreq'] = 0;
+            objItemCurrent[affix + 'groupfreq'] = 0;
 
-            if (affixGroups[0].indexOf(affix) > -1) pobj = {};
-            if (affixGroups[1].indexOf(affix) > -1) sobj = {};
+            if (listGroupAffix[0].indexOf(affix) > -1) {
+                setObjPrefix({});
+            }
+            if (listGroupAffix[1].indexOf(affix) > -1) {
+                setObjSuffix({});
+            }
 
             for (i = 0; i < affixTable.length; i++) {
                 if (!affixTable[i].name) continue; //Affix has no name
@@ -1390,46 +1340,51 @@ function filterAffixes(affixTable, affix) {
                 document.getElementById(affix + '-' + i).disabled = true;
 
                 if (affixTable[i].version === 0) continue; //Old affixes that aren't used anymore
-                if (affixTable[i].version !== 1 && !item.expansion) continue; //Item version isn't same as affix
-                if (!affixTable[i].rare && item.quality !== 4) continue; //Item is not magic and this affix only spawns on magic items
-                if (item.types.indexOf(affixTable[i].etype1) > -1) continue; //Item has an equiv matching one of the groups this affix cannot be on
-                if (item.types.indexOf(affixTable[i].etype2) > -1) continue;
-                if (item.types.indexOf(affixTable[i].etype3) > -1) continue;
-                if (affixTable[i].etype4 && item.types.indexOf(affixTable[i].etype4) > -1) continue;
-                if (affixTable[i].etype5 && item.types.indexOf(affixTable[i].etype5) > -1) continue;
-                if (item.class && affixTable[i].classspecific && affixTable[i].classspecific !== item.class) continue; //Affix is class specific and doesn't match the class specific base (if any)
+                if (affixTable[i].version !== 1 && !objItemCurrent.expansion) continue; //Item version isn't same as affix
+                if (!affixTable[i].rare && objItemCurrent.quality !== 4) continue; //Item is not magic and this affix only spawns on magic items
+                if (objItemCurrent.types.indexOf(affixTable[i].etype1) > -1) continue; //Item has an equiv matching one of the groups this affix cannot be on
+                if (objItemCurrent.types.indexOf(affixTable[i].etype2) > -1) continue;
+                if (objItemCurrent.types.indexOf(affixTable[i].etype3) > -1) continue;
+                if (affixTable[i].etype4 && objItemCurrent.types.indexOf(affixTable[i].etype4) > -1) continue;
+                if (affixTable[i].etype5 && objItemCurrent.types.indexOf(affixTable[i].etype5) > -1) continue;
                 if (
-                    item.types.indexOf(affixTable[i].itype1) === -1 &&
-                    item.types.indexOf(affixTable[i].itype2) === -1 &&
-                    item.types.indexOf(affixTable[i].itype3) === -1 &&
-                    item.types.indexOf(affixTable[i].itype4) === -1 &&
-                    item.types.indexOf(affixTable[i].itype5) === -1 &&
-                    item.types.indexOf(affixTable[i].itype6) === -1 &&
-                    item.types.indexOf(affixTable[i].itype7) === -1
+                    objItemCurrent.class &&
+                    affixTable[i].classspecific &&
+                    affixTable[i].classspecific !== objItemCurrent.class
+                )
+                    continue; //Affix is class specific and doesn't match the class specific base (if any)
+                if (
+                    objItemCurrent.types.indexOf(affixTable[i].itype1) === -1 &&
+                    objItemCurrent.types.indexOf(affixTable[i].itype2) === -1 &&
+                    objItemCurrent.types.indexOf(affixTable[i].itype3) === -1 &&
+                    objItemCurrent.types.indexOf(affixTable[i].itype4) === -1 &&
+                    objItemCurrent.types.indexOf(affixTable[i].itype5) === -1 &&
+                    objItemCurrent.types.indexOf(affixTable[i].itype6) === -1 &&
+                    objItemCurrent.types.indexOf(affixTable[i].itype7) === -1
                 )
                     continue; //Affix cannot spawn on this basetype (none of the equivs match itype1-7)
-                if (affixTable[i].level && item.alvl < affixTable[i].level) continue; //Item level is too low
-                if (affixTable[i].maxlevel && affixTable[i].maxlevel < item.level) continue; //Item level is too high
-                if (affix === 'autoaffix' && affixTable[i].group !== item.autogroup) continue; //Autogroup doesn't match the group of affixes the item can spawn with
+                if (affixTable[i].level && objItemCurrent.alvl < affixTable[i].level) continue; //Item level is too low
+                if (affixTable[i].maxlevel && affixTable[i].maxlevel < objItemCurrent.level) continue; //Item level is too high
+                if (affix === 'autoaffix' && affixTable[i].group !== objItemCurrent.autogroup) continue; //Autogroup doesn't match the group of affixes the item can spawn with
                 if (affixOverCap(affix)) continue; //This affix would go over prefix/suffix/affix cap
 
-                item[affix + 'totalfreq'] += affixTable[i].frequency;
-                if (item[affix] !== -1 && affixTable[item[affix]].group === affixTable[i].group)
-                    item[affix + 'groupfreq'] += affixTable[i].frequency;
+                objItemCurrent[affix + 'totalfreq'] += affixTable[i].frequency;
+                if (objItemCurrent[affix] !== -1 && affixTable[objItemCurrent[affix]].group === affixTable[i].group)
+                    objItemCurrent[affix + 'groupfreq'] += affixTable[i].frequency;
 
-                if (affixGroups[0].indexOf(affix) > -1) {
-                    if (!pobj.hasOwnProperty(affixTable[i].group)) {
-                        pobj[affixTable[i].group] = [affixTable[i].group, affixTable[i].frequency, 1, 0, 0];
+                if (listGroupAffix[0].indexOf(affix) > -1) {
+                    if (!objPrefix.hasOwnProperty(affixTable[i].group)) {
+                        objPrefix[affixTable[i].group] = [affixTable[i].group, affixTable[i].frequency, 1, 0, 0];
                     } else {
-                        pobj[affixTable[i].group][1] += affixTable[i].frequency;
+                        objPrefix[affixTable[i].group][1] += affixTable[i].frequency;
                     }
                 }
 
-                if (affixGroups[1].indexOf(affix) > -1) {
-                    if (!sobj.hasOwnProperty(affixTable[i].group)) {
-                        sobj[affixTable[i].group] = [affixTable[i].group, affixTable[i].frequency, 2, 0, 0];
+                if (listGroupAffix[1].indexOf(affix) > -1) {
+                    if (!objSuffix.hasOwnProperty(affixTable[i].group)) {
+                        objSuffix[affixTable[i].group] = [affixTable[i].group, affixTable[i].frequency, 2, 0, 0];
                     } else {
-                        sobj[affixTable[i].group][1] += affixTable[i].frequency;
+                        objSuffix[affixTable[i].group][1] += affixTable[i].frequency;
                     }
                 }
 
@@ -1441,24 +1396,27 @@ function filterAffixes(affixTable, affix) {
 
     //if (affix === "autoaffix") return;
 
-    if (item[affix] !== -1 && document.getElementById(affix + '-' + item[affix]).disabled) {
+    if (objItemCurrent[affix] !== -1 && document.getElementById(affix + '-' + objItemCurrent[affix]).disabled) {
         document.getElementById(affix + '-Select').value = -1;
-        item[affix] = -1;
+        objItemCurrent[affix] = -1;
         getAffixCount();
         setAvoidGroups();
-        item[affix + 'groupfreq'] = 0;
+        objItemCurrent[affix + 'groupfreq'] = 0;
     }
 }
 
 function getAffixLevel(lvl) {
     var alvl,
-        ilvl = (lvl || item.level) < baseTypes[item.classid].level ? baseTypes[item.classid].level : lvl || item.level;
+        ilvl =
+            (lvl || objItemCurrent.level) < baseTypes[objItemCurrent.classid].level
+                ? baseTypes[objItemCurrent.classid].level
+                : lvl || objItemCurrent.level;
 
-    if (baseTypes[item.classid]['magic lvl']) {
-        alvl = ilvl + baseTypes[item.classid]['magic lvl'];
+    if (baseTypes[objItemCurrent.classid]['magic lvl']) {
+        alvl = ilvl + baseTypes[objItemCurrent.classid]['magic lvl'];
     } else {
-        if (ilvl < 99 - Math.floor(baseTypes[item.classid].level / 2)) {
-            alvl = ilvl - Math.floor(baseTypes[item.classid].level / 2);
+        if (ilvl < 99 - Math.floor(baseTypes[objItemCurrent.classid].level / 2)) {
+            alvl = ilvl - Math.floor(baseTypes[objItemCurrent.classid].level / 2);
         } else {
             alvl = ilvl * 2 - 99;
         }
@@ -1475,23 +1433,23 @@ function setSlider(affixTable, affix) {
         case 'smod1':
         case 'smod2':
         case 'smod3':
-            if (item[affix] === -1) {
+            if (objItemCurrent[affix] === -1) {
                 document.getElementById(affix + '-range1Div').style.display = 'none';
-                delete item[affix + '-range1'];
+                delete objItemCurrent[affix + '-range1'];
                 return;
             }
 
             slider = document.getElementById(affix + '-range1');
-            item[affix + '-range1'] = +slider.value;
-            skill = skills[item[affix]];
+            objItemCurrent[affix + '-range1'] = +slider.value;
+            skill = skills[objItemCurrent[affix]];
 
-            dstats[affix] = {};
-            dstats[affix].value = +slider.value;
-            dstats[affix].skill = skill;
-            dstats[affix].modcode = affix;
-            dstats[affix].properties = properties['skill'];
-            dstats[affix].itemstat = itemStatCost[modcodeToItemStat('skill')];
-            dstats[affix].descprio = dstats[affix].itemstat.descpriority; // Add a shorthand...
+            objStatDefense[affix] = {};
+            objStatDefense[affix].value = +slider.value;
+            objStatDefense[affix].skill = skill;
+            objStatDefense[affix].modcode = affix;
+            objStatDefense[affix].properties = properties['skill'];
+            objStatDefense[affix].itemstat = itemStatCost[modcodeToItemStat('skill')];
+            objStatDefense[affix].descprio = objStatDefense[affix].itemstat.descpriority; // Add a shorthand...
 
             document.getElementById(affix + '-range1Value').innerHTML = slider.value;
             document.getElementById(affix + '-range1Div').style.display = 'block';
@@ -1510,27 +1468,29 @@ function setSlider(affixTable, affix) {
             for (i = 0; i < 4; i++) {
                 //Iterate the three modcodes - four if safety craft..
                 modcode =
-                    item[affix] === -1
+                    objItemCurrent[affix] === -1
                         ? 0
-                        : affixTable[item[affix]][affix === 'craft' ? 'mod ' + (i + 1) : 'mod' + (i + 1) + 'code'];
+                        : affixTable[objItemCurrent[affix]][
+                              affix === 'craft' ? 'mod ' + (i + 1) : 'mod' + (i + 1) + 'code'
+                          ];
 
                 if (!modcode) {
                     el = document.getElementById(affix + '-range' + (i + 1) + 'Div');
                     if (el) el.style.display = 'none';
-                    delete item[affix + '-range' + (i + 1)];
-                    delete item[affix + '-min' + (i + 1)];
-                    delete item[affix + '-max' + (i + 1)];
+                    delete objItemCurrent[affix + '-range' + (i + 1)];
+                    delete objItemCurrent[affix + '-min' + (i + 1)];
+                    delete objItemCurrent[affix + '-max' + (i + 1)];
                     continue;
                 }
 
                 if (affix === 'craft') {
-                    modparam = affixTable[item[affix]]['mod ' + (i + 1) + ' param'];
-                    modmin = affixTable[item[affix]]['mod ' + (i + 1) + ' min'];
-                    modmax = affixTable[item[affix]]['mod ' + (i + 1) + ' max'];
+                    modparam = affixTable[objItemCurrent[affix]]['mod ' + (i + 1) + ' param'];
+                    modmin = affixTable[objItemCurrent[affix]]['mod ' + (i + 1) + ' min'];
+                    modmax = affixTable[objItemCurrent[affix]]['mod ' + (i + 1) + ' max'];
                 } else {
-                    modparam = affixTable[item[affix]]['mod' + (i + 1) + 'param'];
-                    modmin = affixTable[item[affix]]['mod' + (i + 1) + 'min'];
-                    modmax = affixTable[item[affix]]['mod' + (i + 1) + 'max'];
+                    modparam = affixTable[objItemCurrent[affix]]['mod' + (i + 1) + 'param'];
+                    modmin = affixTable[objItemCurrent[affix]]['mod' + (i + 1) + 'min'];
+                    modmax = affixTable[objItemCurrent[affix]]['mod' + (i + 1) + 'max'];
                 }
 
                 if (!modmin && !modmax) {
@@ -1539,7 +1499,7 @@ function setSlider(affixTable, affix) {
                     modparam = 0;
                 }
 
-                modmid = firstLoad ? item[affix + '-range' + (i + 1)] : Math.ceil((modmin + modmax) / 2);
+                modmid = isLoadedFirst ? objItemCurrent[affix + '-range' + (i + 1)] : Math.ceil((modmin + modmax) / 2);
                 if (!modmid) modmid = Math.ceil((modmin + modmax) / 2);
 
                 desc = (properties[modcode]['*desc'] || modcode) + ' (';
@@ -1567,7 +1527,7 @@ function setSlider(affixTable, affix) {
                 ) {
                     //Don't mess with selection unless there's a change in the range
                     document.getElementById(affix + '-range' + (i + 1) + 'Value').innerHTML = modmid;
-                    item[affix + '-range' + (i + 1)] = modmid;
+                    objItemCurrent[affix + '-range' + (i + 1)] = modmid;
                     slider.min = modmin;
                     slider.max = modmax;
                     slider.value = modmid;
@@ -1580,36 +1540,37 @@ function setSlider(affixTable, affix) {
                     slider.min === slider.max || parseInt(slider.min) > parseInt(slider.max) ? true : false
                 );
 
-                if (!stats.hasOwnProperty(modcode)) stats[modcode] = 0;
-                if (!dstats.hasOwnProperty(modcode)) {
-                    dstats[modcode] = {};
-                    dstats[modcode].value = 0;
-                    dstats[modcode].modcode = modcode;
-                    dstats[modcode].properties = properties[modcode];
-                    dstats[modcode].itemstat = itemStatCost[modcodeToItemStat(modcode)];
-                    dstats[modcode].descprio = dstats[modcode].itemstat.descpriority; // Add a shorthand...
-                    dstats[modcode].affix = affixTable[item[affix]];
+                if (!objStat.hasOwnProperty(modcode)) objStat[modcode] = 0;
+                if (!objStatDefense.hasOwnProperty(modcode)) {
+                    objStatDefense[modcode] = {};
+                    objStatDefense[modcode].value = 0;
+                    objStatDefense[modcode].modcode = modcode;
+                    objStatDefense[modcode].properties = properties[modcode];
+                    objStatDefense[modcode].itemstat = itemStatCost[modcodeToItemStat(modcode)];
+                    objStatDefense[modcode].descprio = objStatDefense[modcode].itemstat.descpriority; // Add a shorthand...
+                    objStatDefense[modcode].affix = affixTable[objItemCurrent[affix]];
 
                     if (affix === 'craft') {
-                        dstats[modcode].modparam = affixTable[item[affix]]['mod ' + (i + 1) + ' param'];
-                        dstats[modcode].modmin = affixTable[item[affix]]['mod ' + (i + 1) + ' min'];
-                        dstats[modcode].modmax = affixTable[item[affix]]['mod ' + (i + 1) + ' max'];
+                        objStatDefense[modcode].modparam =
+                            affixTable[objItemCurrent[affix]]['mod ' + (i + 1) + ' param'];
+                        objStatDefense[modcode].modmin = affixTable[objItemCurrent[affix]]['mod ' + (i + 1) + ' min'];
+                        objStatDefense[modcode].modmax = affixTable[objItemCurrent[affix]]['mod ' + (i + 1) + ' max'];
                     } else {
-                        dstats[modcode].modparam = affixTable[item[affix]]['mod' + (i + 1) + 'param'];
-                        dstats[modcode].modmin = affixTable[item[affix]]['mod' + (i + 1) + 'min'];
-                        dstats[modcode].modmax = affixTable[item[affix]]['mod' + (i + 1) + 'max'];
+                        objStatDefense[modcode].modparam = affixTable[objItemCurrent[affix]]['mod' + (i + 1) + 'param'];
+                        objStatDefense[modcode].modmin = affixTable[objItemCurrent[affix]]['mod' + (i + 1) + 'min'];
+                        objStatDefense[modcode].modmax = affixTable[objItemCurrent[affix]]['mod' + (i + 1) + 'max'];
                     }
                 } else if (modcode === 'dmg-pois') {
                     // Have to stack poison duration too, not just the damage
-                    dstats[modcode].modparam += affixTable[item[affix]]['mod' + (i + 1) + 'param'];
+                    objStatDefense[modcode].modparam += affixTable[objItemCurrent[affix]]['mod' + (i + 1) + 'param'];
                 }
 
-                dstats[modcode].value += +slider.value;
-                stats[modcode] += +slider.value;
+                objStatDefense[modcode].value += +slider.value;
+                objStat[modcode] += +slider.value;
 
-                item[affix + '-range' + (i + 1)] = +slider.value;
-                item[affix + '-min' + (i + 1)] = modmin;
-                item[affix + '-max' + (i + 1)] = modmax;
+                objItemCurrent[affix + '-range' + (i + 1)] = +slider.value;
+                objItemCurrent[affix + '-min' + (i + 1)] = modmin;
+                objItemCurrent[affix + '-max' + (i + 1)] = modmax;
             }
     }
 }
@@ -1617,19 +1578,19 @@ function setSlider(affixTable, affix) {
 function setSliderValue(control) {
     document.getElementById(control.id + 'Value').innerHTML = control.value;
     param.set(control.id, +control.value);
-    item[control.id] = +control.value;
-    stats = {};
-    dstats = {};
-    setSliderGroup(magicPrefix, affixGroups[0]);
-    setSliderGroup(magicSuffix, affixGroups[1]);
-    setSliderGroup(skills, affixGroups[2]);
+    objItemCurrent[control.id] = +control.value;
+    setObjStat({});
+    setObjDefault({});
+    setSliderGroup(magicPrefix, listGroupAffix[0]);
+    setSliderGroup(magicSuffix, listGroupAffix[1]);
+    setSliderGroup(skills, listGroupAffix[2]);
     setSlider(autoMagic, 'autoaffix');
     setSlider(cubeMain, 'craft');
     getPickit();
     generateItem();
     updateTables();
-    //console.log(item);
-    //console.log(stats);
+    //console.log(objItemCurrent);
+    //console.log(objStat);
 }
 
 function setSliderGroup(affixTable, affixGroup) {
@@ -1642,62 +1603,62 @@ function getCompositeStats() {
     let i, skill, composite;
 
     if (
-        dstats.hasOwnProperty('res-all') &&
-        (dstats.hasOwnProperty('res-fire') ||
-            dstats.hasOwnProperty('res-cold') ||
-            dstats.hasOwnProperty('res-ltng') ||
-            dstats.hasOwnProperty('res-pois'))
+        objStatDefense.hasOwnProperty('res-all') &&
+        (objStatDefense.hasOwnProperty('res-fire') ||
+            objStatDefense.hasOwnProperty('res-cold') ||
+            objStatDefense.hasOwnProperty('res-ltng') ||
+            objStatDefense.hasOwnProperty('res-pois'))
     ) {
         composite = ['res-fire', 'res-cold', 'res-ltng', 'res-pois'];
 
         for (i = 0; i < composite.length; i++) {
-            if (dstats.hasOwnProperty(composite[i])) {
-                dstats[composite[i]].value += dstats['res-all'].value;
+            if (objStatDefense.hasOwnProperty(composite[i])) {
+                objStatDefense[composite[i]].value += objStatDefense['res-all'].value;
                 continue;
             }
 
-            dstats[composite[i]] = {};
-            dstats[composite[i]].value = dstats['res-all'].value;
-            dstats[composite[i]].modcode = composite[i];
-            dstats[composite[i]].properties = properties[composite[i]];
-            dstats[composite[i]].itemstat = itemStatCost[modcodeToItemStat(composite[i])];
-            dstats[composite[i]].descprio = dstats[composite[i]].itemstat.descpriority; // Add a shorthand...
+            objStatDefense[composite[i]] = {};
+            objStatDefense[composite[i]].value = objStatDefense['res-all'].value;
+            objStatDefense[composite[i]].modcode = composite[i];
+            objStatDefense[composite[i]].properties = properties[composite[i]];
+            objStatDefense[composite[i]].itemstat = itemStatCost[modcodeToItemStat(composite[i])];
+            objStatDefense[composite[i]].descprio = objStatDefense[composite[i]].itemstat.descpriority; // Add a shorthand...
         }
 
-        delete dstats['res-all'];
+        delete objStatDefense['res-all'];
     }
 }
 
 function getStatOrder() {
-    ostats = [];
+    setListStatOffense([]);
 
     function byDescPrio(a, b) {
         return b.descprio - a.descprio;
     }
 
-    for (var stat in dstats) {
-        ostats.push(dstats[stat]);
+    for (var stat in objStatDefense) {
+        listStatOffense.push(objStatDefense[stat]);
     }
 
-    ostats.sort(byDescPrio);
+    listStatOffense.sort(byDescPrio);
 }
 
 function getWepClassDesc() {
     // Thanks to Doug "the best programmer" for getting this info!
-    if (item.types.indexOf('staf') !== -1) return 'Staff Class';
-    if (item.types.indexOf('axe') !== -1) return 'Axe Class';
-    if (item.types.indexOf('swor') !== -1) return 'Sword Class';
-    if (item.types.indexOf('knif') !== -1) return 'Dagger Class';
-    if (item.types.indexOf('jave') !== -1) return 'Javelin Class';
-    if (item.types.indexOf('spea') !== -1) return 'Spear Class';
-    if (item.types.indexOf('bow') !== -1) return 'Bow Class';
-    if (item.types.indexOf('pole') !== -1) return 'Polearm Class';
-    if (item.types.indexOf('xbow') !== -1) return 'Crossbow Class';
-    if (item.types.indexOf('h2h') !== -1) return 'Claw Class';
-    if (item.types.indexOf('orb') !== -1) return 'Staff Class';
-    if (item.types.indexOf('wand') !== -1) return 'Staff Class';
-    if (item.types.indexOf('thro') !== -1) return 'Equip to Throw';
-    if (item.types.indexOf('blun') !== -1) return 'Mace Class';
+    if (objItemCurrent.types.indexOf('staf') !== -1) return 'Staff Class';
+    if (objItemCurrent.types.indexOf('axe') !== -1) return 'Axe Class';
+    if (objItemCurrent.types.indexOf('swor') !== -1) return 'Sword Class';
+    if (objItemCurrent.types.indexOf('knif') !== -1) return 'Dagger Class';
+    if (objItemCurrent.types.indexOf('jave') !== -1) return 'Javelin Class';
+    if (objItemCurrent.types.indexOf('spea') !== -1) return 'Spear Class';
+    if (objItemCurrent.types.indexOf('bow') !== -1) return 'Bow Class';
+    if (objItemCurrent.types.indexOf('pole') !== -1) return 'Polearm Class';
+    if (objItemCurrent.types.indexOf('xbow') !== -1) return 'Crossbow Class';
+    if (objItemCurrent.types.indexOf('h2h') !== -1) return 'Claw Class';
+    if (objItemCurrent.types.indexOf('orb') !== -1) return 'Staff Class';
+    if (objItemCurrent.types.indexOf('wand') !== -1) return 'Staff Class';
+    if (objItemCurrent.types.indexOf('thro') !== -1) return 'Equip to Throw';
+    if (objItemCurrent.types.indexOf('blun') !== -1) return 'Mace Class';
     return 'Unknown Class';
 }
 
@@ -1816,10 +1777,10 @@ function getWepSpeedDesc(classId = 1, ias = 0) {
         ], // 8 Crossbows (xbw)
     };
 
-    wclass = baseTypes[item.classid].wclass || 'hth';
+    wclass = baseTypes[objItemCurrent.classid].wclass || 'hth';
     animSpeed = classId === 6 && wclass === 'ht1' ? 208 : 256; // Assassin using claws || any other class and wep
     frames = weaponFrames[wclass][classId]; // Base FPA for our class
-    accel = ias - (baseTypes[item.classid].speed || 0) + 100;
+    accel = ias - (baseTypes[objItemCurrent.classid].speed || 0) + 100;
     fpa = Math.floor((256 * frames[0]) / Math.floor((animSpeed * accel) / 100.0));
 
     if (fpa == 0) return 'Very Slow Attack Speed';
@@ -1866,7 +1827,7 @@ function getImplicits() {
             'speed', // Also has "mace class - ", etc before
         ];
 
-    implicits = [];
+    setListImplicit([]);
 
     for (i = 0; i < ikeys.length; i++) {
         implicit = { colors: [], strings: [] };
@@ -1874,48 +1835,58 @@ function getImplicits() {
 
         switch (ikey) {
             case 'name':
-                if (item.quality === 4) break;
-                implicit.colors.push({ 4: 3, 6: 9, 8: 8 }[item.quality]);
+                if (objItemCurrent.quality === 4) break;
+                implicit.colors.push({ 4: 3, 6: 9, 8: 8 }[objItemCurrent.quality]);
                 implicit.strings.push(
-                    locales[rarePrefix[item.namepre].name] + ' ' + locales[rareSuffix[item.namesuf].name]
+                    listLocale[rarePrefix[objItemCurrent.namepre].name] +
+                        ' ' +
+                        listLocale[rareSuffix[objItemCurrent.namesuf].name]
                 );
                 break;
             case 'base':
-                val = locales[baseTypes[item.classid].namestr] || baseTypes[item.classid].name;
-                if (item.quality === 4) {
-                    if (item.p1 !== -1) val = locales[magicPrefix[item.p1].name] + ' ' + val;
-                    if (item.p2 !== -1) val = locales[magicPrefix[item.p2].name] + ' ' + val;
-                    if (item.p3 !== -1) val = locales[magicPrefix[item.p3].name] + ' ' + val;
-                    if (item.s1 !== -1) val = val + ' ' + locales[magicSuffix[item.s1].name];
-                    if (item.s2 !== -1) val = val + ' ' + locales[magicSuffix[item.s2].name];
-                    if (item.s3 !== -1) val = val + ' ' + locales[magicSuffix[item.s3].name];
+                val = listLocale[baseTypes[objItemCurrent.classid].namestr] || baseTypes[objItemCurrent.classid].name;
+                if (objItemCurrent.quality === 4) {
+                    if (objItemCurrent.p1 !== -1) val = listLocale[magicPrefix[objItemCurrent.p1].name] + ' ' + val;
+                    if (objItemCurrent.p2 !== -1) val = listLocale[magicPrefix[objItemCurrent.p2].name] + ' ' + val;
+                    if (objItemCurrent.p3 !== -1) val = listLocale[magicPrefix[objItemCurrent.p3].name] + ' ' + val;
+                    if (objItemCurrent.s1 !== -1) val = val + ' ' + listLocale[magicSuffix[objItemCurrent.s1].name];
+                    if (objItemCurrent.s2 !== -1) val = val + ' ' + listLocale[magicSuffix[objItemCurrent.s2].name];
+                    if (objItemCurrent.s3 !== -1) val = val + ' ' + listLocale[magicSuffix[objItemCurrent.s3].name];
                 }
-                implicit.colors.push({ 4: 3, 6: 9, 8: 8 }[item.quality]);
+                implicit.colors.push({ 4: 3, 6: 9, 8: 8 }[objItemCurrent.quality]);
                 implicit.strings.push(val);
                 break;
             case 'maxac':
                 val =
-                    stats['ac%'] || stats['ac%/lvl']
-                        ? baseTypes[item.classid].maxac + 1
-                        : baseTypes[item.classid].maxac;
+                    objStat['ac%'] || objStat['ac%/lvl']
+                        ? baseTypes[objItemCurrent.classid].maxac + 1
+                        : baseTypes[objItemCurrent.classid].maxac;
                 if (!val) break;
-                if ([91, 92, 93, 94].indexOf(item.craft) !== -1 && dstats['ac%'].affix.hasOwnProperty('name')) val += 1; // Thanks @Kaylin
-                pre = baseTypes[item.classid].maxac;
-                if (item.ethereal) val = Math.floor(val * 1.5);
-                if (item.ethereal) pre = Math.floor(pre * 1.5);
+                if (
+                    [91, 92, 93, 94].indexOf(objItemCurrent.craft) !== -1 &&
+                    objStatDefense['ac%'].affix.hasOwnProperty('name')
+                )
+                    val += 1; // Thanks @Kaylin
+                pre = baseTypes[objItemCurrent.classid].maxac;
+                if (objItemCurrent.ethereal) val = Math.floor(val * 1.5);
+                if (objItemCurrent.ethereal) pre = Math.floor(pre * 1.5);
                 val = Math.floor(
-                    val * (1 + ((stats['ac%'] || 0) + Math.floor(((stats['ac%/lvl'] || 0) * item.charlvl) / 8)) / 100.0)
+                    val *
+                        (1 +
+                            ((objStat['ac%'] || 0) +
+                                Math.floor(((objStat['ac%/lvl'] || 0) * objItemCurrent.charlvl) / 8)) /
+                                100.0)
                 );
-                val += (stats.ac || 0) + Math.floor(((stats['ac/lvl'] || 0) * item.charlvl) / 8);
+                val += (objStat.ac || 0) + Math.floor(((objStat['ac/lvl'] || 0) * objItemCurrent.charlvl) / 8);
                 implicit.colors.push(0);
-                implicit.strings.push(locales['ItemStats1h'] + ' ');
+                implicit.strings.push(listLocale['ItemStats1h'] + ' ');
                 implicit.colors.push(val > pre ? 3 : 0);
                 implicit.strings.push(val.toString());
                 break;
             case 'block':
-                if (item.types.indexOf('shld') === -1) break;
-                val = stats['block'] || 0;
-                switch (item.charclassid) {
+                if (objItemCurrent.types.indexOf('shld') === -1) break;
+                val = objStat['block'] || 0;
+                switch (objItemCurrent.charclassid) {
                     case 1: // Sor
                     case 2: // Nec
                     case 5: // Dru
@@ -1933,47 +1904,50 @@ function getImplicits() {
                         val2 = 20;
                 }
                 implicit.colors.push(0);
-                implicit.strings.push(locales['ItemStats1r']);
+                implicit.strings.push(listLocale['ItemStats1r']);
                 implicit.colors.push(val ? 3 : 0);
-                implicit.strings.push(baseTypes[item.classid].block + val + val2 + '%');
+                implicit.strings.push(baseTypes[objItemCurrent.classid].block + val + val2 + '%');
                 break;
             case 'smite':
-                if (item.charclassid !== 3) break; // Only show smite dmg on paladin
-                if (item.types.indexOf('shld') === -1) break; // Isn't a shield
-                if (!baseTypes[item.classid].mindam) break; // Has no smite damage
+                if (objItemCurrent.charclassid !== 3) break; // Only show smite dmg on paladin
+                if (objItemCurrent.types.indexOf('shld') === -1) break; // Isn't a shield
+                if (!baseTypes[objItemCurrent.classid].mindam) break; // Has no smite damage
                 implicit.colors.push(0);
                 implicit.strings.push(
-                    locales['ItemStats1o'] +
+                    listLocale['ItemStats1o'] +
                         ' ' +
-                        baseTypes[item.classid].mindam +
+                        baseTypes[objItemCurrent.classid].mindam +
                         ' to ' +
-                        baseTypes[item.classid].maxdam
+                        baseTypes[objItemCurrent.classid].maxdam
                 );
                 break;
             case 'throw':
             case '1hand':
             case '2hand':
-                if (item.classid > 305) break;
+                if (objItemCurrent.classid > 305) break;
                 //Min
                 col = { throw: 'minmisdam', '1hand': 'mindam', '2hand': '2handmindam' }[ikey];
-                val = baseTypes[item.classid][col];
+                val = baseTypes[objItemCurrent.classid][col];
                 if (!val) break;
-                if (item.ethereal) val = Math.floor(val * 1.5);
+                if (objItemCurrent.ethereal) val = Math.floor(val * 1.5);
                 pre = val;
-                val = Math.floor(val * (1 + (stats['dmg%'] || 0) / 100.0));
-                val += stats['dmg-min'] || 0; //dmg/lvl is always for max damage
+                val = Math.floor(val * (1 + (objStat['dmg%'] || 0) / 100.0));
+                val += objStat['dmg-min'] || 0; //dmg/lvl is always for max damage
                 val2 = val;
                 //Max
                 col = { throw: 'maxmisdam', '1hand': 'maxdam', '2hand': '2handmaxdam' }[ikey];
-                val = baseTypes[item.classid][col];
+                val = baseTypes[objItemCurrent.classid][col];
                 if (!val) break;
-                if (item.ethereal) val = Math.floor(val * 1.5);
+                if (objItemCurrent.ethereal) val = Math.floor(val * 1.5);
                 pre2 = val;
                 val = Math.floor(
                     val *
-                        (1 + ((stats['dmg%'] || 0) + Math.floor(((stats['dmg%/lvl'] || 0) * item.charlvl) / 8)) / 100.0)
+                        (1 +
+                            ((objStat['dmg%'] || 0) +
+                                Math.floor(((objStat['dmg%/lvl'] || 0) * objItemCurrent.charlvl) / 8)) /
+                                100.0)
                 );
-                val += (stats['dmg-max'] || 0) + Math.floor(((stats['dmg/lvl'] || 0) * item.charlvl) / 8);
+                val += (objStat['dmg-max'] || 0) + Math.floor(((objStat['dmg/lvl'] || 0) * objItemCurrent.charlvl) / 8);
                 if (val2 >= val) val = val2 + 1;
                 implicit.colors.push(0);
                 implicit.strings.push({ throw: 'Throw', '1hand': 'One-Hand', '2hand': 'Two-Hand' }[ikey] + ' Damage: ');
@@ -1981,64 +1955,70 @@ function getImplicits() {
                 implicit.strings.push(val2 + ' to ' + val);
                 break;
             case 'durability':
-                val = baseTypes[item.classid][ikey];
-                if (!val || baseTypes[item.classid].stackable || baseTypes[item.classid].nodurability) break;
-                if (item.ethereal) val = Math.floor(val / 2) + 1;
+                val = baseTypes[objItemCurrent.classid][ikey];
+                if (
+                    !val ||
+                    baseTypes[objItemCurrent.classid].stackable ||
+                    baseTypes[objItemCurrent.classid].nodurability
+                )
+                    break;
+                if (objItemCurrent.ethereal) val = Math.floor(val / 2) + 1;
                 implicit.colors.push(0);
-                implicit.strings.push(locales['ItemStats1d'] + ' ' + val + ' of ' + val);
+                implicit.strings.push(listLocale['ItemStats1d'] + ' ' + val + ' of ' + val);
                 break;
             case 'class':
-                if (!item.class) break;
-                let strOnly = lang === 'eng' ? ' Only' : ' 전용';
-                implicit.colors.push(classCodes.indexOf(item.class) === item.charclassid ? 0 : 1);
-                implicit.strings.push('(' + locales['partychar' + item.class] + strOnly);
+                if (!objItemCurrent.class) break;
+                implicit.colors.push(
+                    listCodeClass.indexOf(objItemCurrent.class) === objItemCurrent.charclassid ? 0 : 1
+                );
+                implicit.strings.push('(' + listLocale['partychar' + objItemCurrent.class] + ' Only');
                 break;
             case 'maxstack':
-                val = baseTypes[item.classid][ikey];
+                val = baseTypes[objItemCurrent.classid][ikey];
                 if (!val) break;
-                val += stats['stack'] || 0;
+                val += objStat['stack'] || 0;
                 implicit.colors.push(0); // Always white, even with increased stack?
-                implicit.strings.push(locales['ItemStats1i'] + ' ' + val);
+                implicit.strings.push(listLocale['ItemStats1i'] + ' ' + val);
                 break;
             case 'socketable':
-                if (item.types.indexOf('sock') === -1) break;
+                if (objItemCurrent.types.indexOf('sock') === -1) break;
                 implicit.colors.push(0);
-                implicit.strings.push(locales['ExInsertSockets']);
+                implicit.strings.push(listLocale['ExInsertSockets']);
                 break;
             case 'reqdex':
             case 'reqstr':
-                val = baseTypes[item.classid][ikey];
+                val = baseTypes[objItemCurrent.classid][ikey];
                 if (!val) break;
-                val = val - Math.floor(val * (Math.abs(stats.ease || 0) / 100));
-                if (item.ethereal) val -= 10;
+                val = val - Math.floor(val * (Math.abs(objStat.ease || 0) / 100));
+                if (objItemCurrent.ethereal) val -= 10;
                 if (val < 1) break;
                 implicit.colors.push(0);
-                implicit.strings.push(locales[{ reqstr: 'ItemStats1e', reqdex: 'ItemStats1f' }[ikey]] + ' ' + val);
+                implicit.strings.push(listLocale[{ reqstr: 'ItemStats1e', reqdex: 'ItemStats1f' }[ikey]] + ' ' + val);
                 break;
             case 'charm':
-                if (item.types.indexOf('char') === -1) break;
+                if (objItemCurrent.types.indexOf('char') === -1) break;
                 implicit.colors.push(0);
-                implicit.strings.push(locales['Charmdes']);
+                implicit.strings.push(listLocale['Charmdes']);
                 break;
             case 'levelreq':
                 val = getItemLevelReq();
                 if (!val) break;
                 implicit.colors.push(0);
-                implicit.strings.push(locales['ItemStats1p'] + ' ' + val);
+                implicit.strings.push(listLocale['ItemStats1p'] + ' ' + val);
                 break;
             case 'speed':
-                if (item.classid > 305) break;
+                if (objItemCurrent.classid > 305) break;
                 implicit.colors.push(0);
                 implicit.strings.push(getWepClassDesc() + ' - ');
-                val = (stats['swing1'] || 0) + (stats['swing2'] || 0) + (stats['swing3'] || 0);
+                val = (objStat['swing1'] || 0) + (objStat['swing2'] || 0) + (objStat['swing3'] || 0);
                 if (val) implicit.colors.push(3);
                 else implicit.colors.push(0);
-                implicit.strings.push(getWepSpeedDesc(item.charclassid, val));
+                implicit.strings.push(getWepSpeedDesc(objItemCurrent.charclassid, val));
                 break;
         }
 
         if (implicit.strings.length) {
-            implicits.push(implicit);
+            listImplicit.push(implicit);
         }
     }
 }
@@ -2047,26 +2027,26 @@ function getExplicits() {
     // Special thanks to Nefarius @ d2mods.info - more about these calcs here https://d2mods.info/forum/kb/viewarticle?a=448
     let i, n, temp;
 
-    explicits = [];
+    setListExplicit([]);
 
-    for (i = 0; i < ostats.length; i++) {
-        var descstr = locales[ostats[i].itemstat.descstrpos];
-        ostats[i].desc = '';
+    for (i = 0; i < listStatOffense.length; i++) {
+        var descstr = listLocale[listStatOffense[i].itemstat.descstrpos];
+        listStatOffense[i].desc = '';
 
         switch (
-            ostats[i].modcode // Manual handling, fuck it!
+            listStatOffense[i].modcode // Manual handling, fuck it!
         ) {
             case 'smod1':
             case 'smod2':
             case 'smod3':
-                //ostats[i].desc = "+" + ostats[i].value + " to " + (locales[ostats[i].skill.skill] || ostats[i].skill.skill) + " (" + locales["partychar"+ostats[i].skill.charclass] + " Only)";
-                ostats[i].desc =
+                //listStatOffense[i].desc = "+" + listStatOffense[i].value + " to " + (listLocale[listStatOffense[i].skill.skill] || listStatOffense[i].skill.skill) + " (" + listLocale["partychar"+listStatOffense[i].skill.charclass] + " Only)";
+                listStatOffense[i].desc =
                     '+' +
-                    ostats[i].value +
+                    listStatOffense[i].value +
                     ' to ' +
-                    ostats[i].skill.name +
+                    listStatOffense[i].skill.name +
                     ' (' +
-                    locales['partychar' + ostats[i].skill.charclass] +
+                    listLocale['partychar' + listStatOffense[i].skill.charclass] +
                     ' Only)';
                 continue;
             case 'cold-len':
@@ -2077,84 +2057,102 @@ function getExplicits() {
             case 'pois-len':
                 continue;
             case 'cold-min':
-                ostats[i].desc = 'Adds ' + ostats[i].value + '-' + dstats['cold-max'].value + ' cold damage';
+                listStatOffense[i].desc =
+                    'Adds ' + listStatOffense[i].value + '-' + objStatDefense['cold-max'].value + ' cold damage';
                 continue;
             case 'fire-min':
-                ostats[i].desc = 'Adds ' + ostats[i].value + '-' + dstats['fire-max'].value + ' fire damage';
+                listStatOffense[i].desc =
+                    'Adds ' + listStatOffense[i].value + '-' + objStatDefense['fire-max'].value + ' fire damage';
                 continue;
             case 'ltng-min':
-                ostats[i].desc = 'Adds ' + ostats[i].value + '-' + dstats['ltng-max'].value + ' lightning damage';
+                listStatOffense[i].desc =
+                    'Adds ' + listStatOffense[i].value + '-' + objStatDefense['ltng-max'].value + ' lightning damage';
                 continue;
             case 'dmg-pois':
-                ostats[i].desc =
+                listStatOffense[i].desc =
                     '+' +
-                    Math.round((ostats[i].value * ostats[i].modparam) / 256) +
+                    Math.round((listStatOffense[i].value * listStatOffense[i].modparam) / 256) +
                     ' poison damage over ' +
-                    Math.round(ostats[i].modparam / 25) +
+                    Math.round(listStatOffense[i].modparam / 25) +
                     ' seconds';
                 continue;
             case 'pois-min': // Only appears on nec heads
-                ostats[i].desc =
+                listStatOffense[i].desc =
                     'Adds ' +
-                    Math.round((dstats['pois-min'].value * dstats['pois-len'].value) / 256) +
+                    Math.round((objStatDefense['pois-min'].value * objStatDefense['pois-len'].value) / 256) +
                     '-' +
-                    Math.floor((dstats['pois-max'].value * dstats['pois-len'].value) / 256) +
+                    Math.floor((objStatDefense['pois-max'].value * objStatDefense['pois-len'].value) / 256) +
                     ' poison damage over ' +
-                    Math.floor(dstats['pois-len'].value / 25) +
+                    Math.floor(objStatDefense['pois-len'].value / 25) +
                     ' seconds';
                 continue;
             case 'mana/lvl':
-                ostats[i].desc =
-                    '+' + Math.floor((ostats[i].value / 8) * item.charlvl) + ' to Mana ' + locales['ModStre9c'];
+                listStatOffense[i].desc =
+                    '+' +
+                    Math.floor((listStatOffense[i].value / 8) * objItemCurrent.charlvl) +
+                    ' to Mana ' +
+                    listLocale['ModStre9c'];
                 continue;
             case 'att%/lvl':
-                ostats[i].desc =
-                    Math.floor((ostats[i].value / 2) * item.charlvl) +
+                listStatOffense[i].desc =
+                    Math.floor((listStatOffense[i].value / 2) * objItemCurrent.charlvl) +
                     '% Bonus to Attack Rating ' +
-                    locales['ModStre9c'];
+                    listLocale['ModStre9c'];
                 continue;
             case 'att/lvl':
-                ostats[i].desc =
+                listStatOffense[i].desc =
                     '+' +
-                    Math.floor((ostats[i].value / 2) * item.charlvl) +
+                    Math.floor((listStatOffense[i].value / 2) * objItemCurrent.charlvl) +
                     ' to Attack Rating ' +
-                    locales['ModStre9c'];
+                    listLocale['ModStre9c'];
                 continue;
             case 'dmg/lvl':
-                ostats[i].desc =
-                    Math.floor((ostats[i].value / 8) * item.charlvl) + ' to Maximum Damage ' + locales['ModStre9c'];
+                listStatOffense[i].desc =
+                    Math.floor((listStatOffense[i].value / 8) * objItemCurrent.charlvl) +
+                    ' to Maximum Damage ' +
+                    listLocale['ModStre9c'];
                 continue;
             case 'ac/lvl':
-                ostats[i].desc =
-                    '+' + Math.floor((ostats[i].value / 8) * item.charlvl) + ' Defense ' + locales['ModStre9c'];
+                listStatOffense[i].desc =
+                    '+' +
+                    Math.floor((listStatOffense[i].value / 8) * objItemCurrent.charlvl) +
+                    ' Defense ' +
+                    listLocale['ModStre9c'];
                 continue;
             case 'skilltab':
-                ostats[i].desc = locales[skillTabs[ostats[i].modparam]].replace(/%d/g, ostats[i].value);
-                ostats[i].desc += ' (' + classes[Math.floor(ostats[i].modparam / 3)] + ' Only)';
+                listStatOffense[i].desc = listLocale[listTabSkill[listStatOffense[i].modparam]].replace(
+                    /%d/g,
+                    listStatOffense[i].value
+                );
+                listStatOffense[i].desc += ' (' + listClass[Math.floor(listStatOffense[i].modparam / 3)] + ' Only)';
                 continue;
             case 'sock':
-                temp = Math.min(item.maxsockets, ostats[i].value);
-                if (temp) ostats[i].desc = 'Socketed (' + temp + ')';
-                if (item.ethereal) ostats[i].desc = 'Ethereal (Cannot be Repaired), ' + ostats[i].desc;
+                temp = Math.min(objItemCurrent.maxsockets, listStatOffense[i].value);
+                if (temp) listStatOffense[i].desc = 'Socketed (' + temp + ')';
+                if (objItemCurrent.ethereal)
+                    listStatOffense[i].desc = 'Ethereal (Cannot be Repaired), ' + listStatOffense[i].desc;
                 continue;
             case 'res-all':
-                ostats[i].desc = descstr.replace('%d', ostats[i].value);
+                listStatOffense[i].desc = descstr.replace('%d', listStatOffense[i].value);
                 continue;
             case 'ease':
-                ostats[i].desc = descstr + ' ' + ostats[i].value + '%';
+                listStatOffense[i].desc = descstr + ' ' + listStatOffense[i].value + '%';
                 continue;
             case 'dmg-min': // Replace min and max damage with "Adds min-max damage" when min is < max.
-                if (!dstats['dmg-max'] || dstats['dmg-min'].value >= dstats['dmg-max'].value) break;
-                ostats[i].desc = 'Adds ' + dstats['dmg-min'].value + '-' + dstats['dmg-max'].value + ' damage';
+                if (!objStatDefense['dmg-max'] || objStatDefense['dmg-min'].value >= objStatDefense['dmg-max'].value)
+                    break;
+                listStatOffense[i].desc =
+                    'Adds ' + objStatDefense['dmg-min'].value + '-' + objStatDefense['dmg-max'].value + ' damage';
                 continue;
             case 'dmg-max':
-                if (dstats['dmg-min'] && dstats['dmg-min'].value < dstats['dmg-max'].value) continue;
+                if (objStatDefense['dmg-min'] && objStatDefense['dmg-min'].value < objStatDefense['dmg-max'].value)
+                    continue;
                 break;
         }
 
-        if (descstr === undefined) console.log('undefined descstr: ' + ostats[i].modcode);
+        if (descstr === undefined) console.log('undefined descstr: ' + listStatOffense[i].modcode);
 
-        switch (ostats[i].itemstat.descval) {
+        switch (listStatOffense[i].itemstat.descval) {
             case 0: // Don't add a value, it already exists or the value shouldn't be visible
                 break;
             case 1: // Show the value before
@@ -2165,62 +2163,69 @@ function getExplicits() {
                 break;
         }
 
-        switch (ostats[i].itemstat.descfunc) {
+        switch (listStatOffense[i].itemstat.descfunc) {
             case 1: // +[value] [string1]
-                ostats[i].desc = descstr.replace(/%d/g, '+' + ostats[i].value);
+                listStatOffense[i].desc = descstr.replace(/%d/g, '+' + listStatOffense[i].value);
                 break;
             case 2: // [value]% [string1]
-                ostats[i].desc = descstr.replace(/%d/g, ostats[i].value + '%');
+                listStatOffense[i].desc = descstr.replace(/%d/g, listStatOffense[i].value + '%');
                 break;
             case 3: // [string1] [value]
-                ostats[i].desc = descstr.replace(/%d/g, ostats[i].value);
+                listStatOffense[i].desc = descstr.replace(/%d/g, listStatOffense[i].value);
                 break;
             case 4: // +[value]% [string1]
-                ostats[i].desc = descstr.replace(/%d/g, '+' + ostats[i].value + '%');
+                listStatOffense[i].desc = descstr.replace(/%d/g, '+' + listStatOffense[i].value + '%');
                 break;
             case 5: // [value*100/128]% [string1]
-                ostats[i].desc = descstr.replace(/%d/g, Math.floor((ostats[i].value * 100) / 128) + '%');
+                listStatOffense[i].desc = descstr.replace(
+                    /%d/g,
+                    Math.floor((listStatOffense[i].value * 100) / 128) + '%'
+                );
                 break;
             case 11: // Repairs 1 Durability In [100 / value] Seconds
-                ostats[i].desc = 'Repairs 1 durability in ' + Math.floor(100 / ostats[i].value) + ' seconds';
+                listStatOffense[i].desc =
+                    'Repairs 1 durability in ' + Math.floor(100 / listStatOffense[i].value) + ' seconds';
                 break;
             case 13: // +[value] to [class] Skill Levels
-                descstr = descstr.replace(/%d/g, '+' + ostats[i].value);
-                ostats[i].desc = descstr.replace('Amazon', classes[ostats[i].properties.val1]);
+                descstr = descstr.replace(/%d/g, '+' + listStatOffense[i].value);
+                listStatOffense[i].desc = descstr.replace('Amazon', listClass[listStatOffense[i].properties.val1]);
                 break;
             case 15: // [chance]% to cast [slvl] [skill] on [event]
-                descstr = descstr.replace('%d%', ostats[i].modmin);
-                descstr = descstr.replace('%d', ostats[i].modmax);
-                ostats[i].desc = descstr.replace('%s', skills[ostats[i].value].name);
+                descstr = descstr.replace('%d%', listStatOffense[i].modmin);
+                descstr = descstr.replace('%d', listStatOffense[i].modmax);
+                listStatOffense[i].desc = descstr.replace('%s', skills[listStatOffense[i].value].name);
                 break;
             case 24: // Charged skills
                 temp = Math.max(
                     1,
                     Math.floor(
-                        (item.level - skills[ostats[i].value].reqlevel) /
-                            Math.floor((99 - skills[ostats[i].value].reqlevel) / Math.abs(ostats[i].modmax))
+                        (objItemCurrent.level - skills[listStatOffense[i].value].reqlevel) /
+                            Math.floor(
+                                (99 - skills[listStatOffense[i].value].reqlevel) / Math.abs(listStatOffense[i].modmax)
+                            )
                     )
                 );
-                ostats[i].desc = 'Level ' + temp + ' ';
-                temp = Math.floor((Math.abs(ostats[i].modmin) * temp) / 8) + Math.abs(ostats[i].modmin);
-                ostats[i].desc += skills[ostats[i].value].name + ' ';
-                ostats[i].desc += descstr.replace(/%d/g, temp);
+                listStatOffense[i].desc = 'Level ' + temp + ' ';
+                temp =
+                    Math.floor((Math.abs(listStatOffense[i].modmin) * temp) / 8) + Math.abs(listStatOffense[i].modmin);
+                listStatOffense[i].desc += skills[listStatOffense[i].value].name + ' ';
+                listStatOffense[i].desc += descstr.replace(/%d/g, temp);
                 break;
         }
     }
 
-    for (i = 0; i < ostats.length; i++) {
-        if (!ostats[i].desc) continue;
+    for (i = 0; i < listStatOffense.length; i++) {
+        if (!listStatOffense[i].desc) continue;
 
-        explicits.push(ostats[i].desc);
+        listExplicit.push(listStatOffense[i].desc);
     }
 
-    if (item.ethereal && !dstats.hasOwnProperty('sock')) {
-        explicits.push('Ethereal (Cannot be Repaired)');
+    if (objItemCurrent.ethereal && !objStatDefense.hasOwnProperty('sock')) {
+        listExplicit.push('Ethereal (Cannot be Repaired)');
     }
 
-    for (i = 0; i < explicits.length; i++) {
-        explicits[i] = { colors: [3], strings: [explicits[i]] };
+    for (i = 0; i < listExplicit.length; i++) {
+        listExplicit[i] = { colors: [3], strings: [listExplicit[i]] };
     }
 }
 
@@ -2327,30 +2332,31 @@ function getItemColor(equipped) {
     //S1 > S2 > S3 > P1 > P2 > P3
     let i;
 
-    item[equipped ? 'ecolor' : 'icolor'] = { name: 'none', id: 21 };
-    if (item.quality === 8) return true;
+    objItemCurrent[equipped ? 'ecolor' : 'icolor'] = { name: 'none', id: 21 };
+    if (objItemCurrent.quality === 8) return true;
 
-    if (baseTypes[item.classid][equipped ? 'transform' : 'invtrans']) {
-        for (i = 0; i < affixGroups[1].length; i++) {
-            if (item[affixGroups[1][i]] !== -1) {
-                if (magicSuffix[item[affixGroups[1][i]]].transformcolor) {
-                    item[equipped ? 'ecolor' : 'icolor'] =
-                        colorTable[magicSuffix[item[affixGroups[1][i]]].transformcolor];
+    if (baseTypes[objItemCurrent.classid][equipped ? 'transform' : 'invtrans']) {
+        for (i = 0; i < listGroupAffix[1].length; i++) {
+            if (objItemCurrent[listGroupAffix[1][i]] !== -1) {
+                if (magicSuffix[objItemCurrent[listGroupAffix[1][i]]].transformcolor) {
+                    objItemCurrent[equipped ? 'ecolor' : 'icolor'] =
+                        objTableColor[magicSuffix[objItemCurrent[listGroupAffix[1][i]]].transformcolor];
                     return true;
                 }
             }
         }
-        for (i = 0; i < affixGroups[0].length; i++) {
-            if (item[affixGroups[0][i]] !== -1) {
-                if (magicPrefix[item[affixGroups[0][i]]].transformcolor) {
-                    item[equipped ? 'ecolor' : 'icolor'] =
-                        colorTable[magicPrefix[item[affixGroups[0][i]]].transformcolor];
+        for (i = 0; i < listGroupAffix[0].length; i++) {
+            if (objItemCurrent[listGroupAffix[0][i]] !== -1) {
+                if (magicPrefix[objItemCurrent[listGroupAffix[0][i]]].transformcolor) {
+                    objItemCurrent[equipped ? 'ecolor' : 'icolor'] =
+                        objTableColor[magicPrefix[objItemCurrent[listGroupAffix[0][i]]].transformcolor];
                     return true;
                 }
             }
         }
-        if (item.autoaffix + 1 && autoMagic[item.autoaffix].transform) {
-            item[equipped ? 'ecolor' : 'icolor'] = colorTable[autoMagic[item.autoaffix].transformcolor];
+        if (objItemCurrent.autoaffix + 1 && autoMagic[objItemCurrent.autoaffix].transform) {
+            objItemCurrent[equipped ? 'ecolor' : 'icolor'] =
+                objTableColor[autoMagic[objItemCurrent.autoaffix].transformcolor];
         }
     }
 
@@ -2359,31 +2365,31 @@ function getItemColor(equipped) {
 
 function getItemGambleable() {
     for (let i = 0; i < gamble.length; i++) {
-        if (gamble[i].code === baseTypes[item.classid].code) return 'yes';
-        if (!baseTypes[item.classid].hasOwnProperty('normcode')) continue;
-        if (gamble[i].code === baseTypes[item.classid].normcode) return 'yes';
+        if (gamble[i].code === baseTypes[objItemCurrent.classid].code) return 'yes';
+        if (!baseTypes[objItemCurrent.classid].hasOwnProperty('normcode')) continue;
+        if (gamble[i].code === baseTypes[objItemCurrent.classid].normcode) return 'yes';
     }
     return 'no';
 }
 
 function getItemUpgradeable() {
-    if (!item.expansion) return 'no';
-    if (baseTypes[item.classid].code === baseTypes[item.classid].normcode) return 'twice';
-    if (baseTypes[item.classid].code === baseTypes[item.classid].ubercode) return 'once';
-    if (baseTypes[item.classid].code === baseTypes[item.classid].ultracode) return 'no';
+    if (!objItemCurrent.expansion) return 'no';
+    if (baseTypes[objItemCurrent.classid].code === baseTypes[objItemCurrent.classid].normcode) return 'twice';
+    if (baseTypes[objItemCurrent.classid].code === baseTypes[objItemCurrent.classid].ubercode) return 'once';
+    if (baseTypes[objItemCurrent.classid].code === baseTypes[objItemCurrent.classid].ultracode) return 'no';
     return 'no';
 }
 
 function getItemLevel() {
     var lvl = Math.max(
-        //item.classid	=== -1 ? 0 : baseTypes[item.classid].level,
-        item.p1 === -1 ? 0 : magicPrefix[item.p1].level,
-        item.p2 === -1 ? 0 : magicPrefix[item.p2].level,
-        item.p3 === -1 ? 0 : magicPrefix[item.p3].level,
-        item.s1 === -1 ? 0 : magicSuffix[item.s1].level,
-        item.s2 === -1 ? 0 : magicSuffix[item.s2].level,
-        item.s3 === -1 ? 0 : magicSuffix[item.s3].level,
-        item.autoaffix === -1 ? 0 : autoMagic[item.autoaffix].level
+        //objItemCurrent.classid	=== -1 ? 0 : baseTypes[objItemCurrent.classid].level,
+        objItemCurrent.p1 === -1 ? 0 : magicPrefix[objItemCurrent.p1].level,
+        objItemCurrent.p2 === -1 ? 0 : magicPrefix[objItemCurrent.p2].level,
+        objItemCurrent.p3 === -1 ? 0 : magicPrefix[objItemCurrent.p3].level,
+        objItemCurrent.s1 === -1 ? 0 : magicSuffix[objItemCurrent.s1].level,
+        objItemCurrent.s2 === -1 ? 0 : magicSuffix[objItemCurrent.s2].level,
+        objItemCurrent.s3 === -1 ? 0 : magicSuffix[objItemCurrent.s3].level,
+        objItemCurrent.autoaffix === -1 ? 0 : autoMagic[objItemCurrent.autoaffix].level
     );
 
     for (let i = 1; i < 99; i++) {
@@ -2393,7 +2399,7 @@ function getItemLevel() {
         }
     }
 
-    item.minlevel = lvl;
+    objItemCurrent.minlevel = lvl;
     return lvl;
 }
 
@@ -2401,25 +2407,25 @@ function getItemLevelReq() {
     var rlvl = 0;
 
     rlvl = Math.max(
-        item.classid === -1 ? 0 : baseTypes[item.classid].levelreq,
-        item.p1 === -1 ? 0 : magicPrefix[item.p1].levelreq,
-        item.p2 === -1 ? 0 : magicPrefix[item.p2].levelreq,
-        item.p3 === -1 ? 0 : magicPrefix[item.p3].levelreq,
-        item.s1 === -1 ? 0 : magicSuffix[item.s1].levelreq,
-        item.s2 === -1 ? 0 : magicSuffix[item.s2].levelreq,
-        item.s3 === -1 ? 0 : magicSuffix[item.s3].levelreq,
-        item.autoaffix === -1 ? 0 : autoMagic[item.autoaffix].levelreq
+        objItemCurrent.classid === -1 ? 0 : baseTypes[objItemCurrent.classid].levelreq,
+        objItemCurrent.p1 === -1 ? 0 : magicPrefix[objItemCurrent.p1].levelreq,
+        objItemCurrent.p2 === -1 ? 0 : magicPrefix[objItemCurrent.p2].levelreq,
+        objItemCurrent.p3 === -1 ? 0 : magicPrefix[objItemCurrent.p3].levelreq,
+        objItemCurrent.s1 === -1 ? 0 : magicSuffix[objItemCurrent.s1].levelreq,
+        objItemCurrent.s2 === -1 ? 0 : magicSuffix[objItemCurrent.s2].levelreq,
+        objItemCurrent.s3 === -1 ? 0 : magicSuffix[objItemCurrent.s3].levelreq,
+        objItemCurrent.autoaffix === -1 ? 0 : autoMagic[objItemCurrent.autoaffix].levelreq
     );
 
-    if (item.quality === 8) {
-        rlvl += 10 + item.anum * 3;
+    if (objItemCurrent.quality === 8) {
+        rlvl += 10 + objItemCurrent.anum * 3;
     }
 
     rlvl = Math.max(
         rlvl,
-        item.smod1 === -1 ? 0 : skills[item.smod1].reqlevel,
-        item.smod2 === -1 ? 0 : skills[item.smod2].reqlevel,
-        item.smod3 === -1 ? 0 : skills[item.smod3].reqlevel
+        objItemCurrent.smod1 === -1 ? 0 : skills[objItemCurrent.smod1].reqlevel,
+        objItemCurrent.smod2 === -1 ? 0 : skills[objItemCurrent.smod2].reqlevel,
+        objItemCurrent.smod3 === -1 ? 0 : skills[objItemCurrent.smod3].reqlevel
     );
 
     return Math.min(rlvl, 98);
@@ -2488,10 +2494,10 @@ var tables = {
 function getStaffTiers() {
     let i;
 
-    item.smodtier = 0;
-    item.smodlevelreqs = [];
+    objItemCurrent.smodtier = 0;
+    objItemCurrent.smodlevelreqs = [];
 
-    if (!item.staffmods) return;
+    if (!objItemCurrent.staffmods) return;
 
     var smodLevelReqs = [
         // Possible skills with X level req for each tier
@@ -2516,7 +2522,7 @@ function getStaffTiers() {
 
     for (i = 0; i < skills.length; i++) {
         if (!skills[i].charclass) continue;
-        if (skills[i].charclass !== item.staffmods) continue;
+        if (skills[i].charclass !== objItemCurrent.staffmods) continue;
 
         if (!smods.hasOwnProperty(skills[i].reqlevel)) smods[skills[i].reqlevel] = [];
         if (!smodsf.hasOwnProperty(skills[i].reqlevel)) smodsf[skills[i].reqlevel] = [];
@@ -2524,25 +2530,25 @@ function getStaffTiers() {
 
         if (
             (skills[i].itypea1 || skills[i].itypea2 || skills[i].itypea3) && //At least one itypea specifified AND (item doesn't have itypea1 && 2 && 3) aka is not in any of the allowed itypea's
-            item.types.indexOf(skills[i].itypea1) === -1 &&
-            item.types.indexOf(skills[i].itypea2) === -1 &&
-            item.types.indexOf(skills[i].itypea3) === -1
+            objItemCurrent.types.indexOf(skills[i].itypea1) === -1 &&
+            objItemCurrent.types.indexOf(skills[i].itypea2) === -1 &&
+            objItemCurrent.types.indexOf(skills[i].itypea3) === -1
         ) {
             smodsf[skills[i].reqlevel].push(i);
         }
     }
 
-    if (item.level >= 1 && item.level <= 11) item.smodtier = 1;
-    if (item.level >= 12 && item.level <= 18) item.smodtier = 2;
-    if (item.level >= 19 && item.level <= 24) item.smodtier = 3;
-    if (item.level >= 25 && item.level <= 36) item.smodtier = 4;
-    if (item.level >= 37 && item.level <= 99) item.smodtier = 5;
-    if (item.level >= 25 && !item.expansion) item.smodtier = 4;
+    if (objItemCurrent.level >= 1 && objItemCurrent.level <= 11) objItemCurrent.smodtier = 1;
+    if (objItemCurrent.level >= 12 && objItemCurrent.level <= 18) objItemCurrent.smodtier = 2;
+    if (objItemCurrent.level >= 19 && objItemCurrent.level <= 24) objItemCurrent.smodtier = 3;
+    if (objItemCurrent.level >= 25 && objItemCurrent.level <= 36) objItemCurrent.smodtier = 4;
+    if (objItemCurrent.level >= 37 && objItemCurrent.level <= 99) objItemCurrent.smodtier = 5;
+    if (objItemCurrent.level >= 25 && !objItemCurrent.expansion) objItemCurrent.smodtier = 4;
 
-    item.smodlevelreqs = smodLevelReqs[item.smodtier - 1];
-    item.smodtierodds = smodTierOdds[item.smodtier - 1];
-    item.smods = smods;
-    item.smodsf = smodsf;
+    objItemCurrent.smodlevelreqs = smodLevelReqs[objItemCurrent.smodtier - 1];
+    objItemCurrent.smodtierodds = smodTierOdds[objItemCurrent.smodtier - 1];
+    objItemCurrent.smods = smods;
+    objItemCurrent.smodsf = smodsf;
     return;
 }
 
@@ -2636,8 +2642,8 @@ function getAffixProbability(imbued) {
         totalprefixchance = 0;
         totalsuffixchance = 0;
 
-        if (item.pnum > prenum) return;
-        if (item.snum > sufnum) return;
+        if (objItemCurrent.pnum > prenum) return;
+        if (objItemCurrent.snum > sufnum) return;
 
         addPrefix(prenum, 1, prefixfreq);
         addSuffix(sufnum, 1, suffixfreq);
@@ -2645,7 +2651,7 @@ function getAffixProbability(imbued) {
         totalchance += totalprefixchance * totalsuffixchance * chance;
     };
 
-    if (item.smodnum) {
+    if (objItemCurrent.smodnum) {
         /* Thanks to @feanur for the back and forth and @librarian for the documentation http://www.mannm.org/d2library/faqtoids/staffmods_eng.html#gestab 
 		
 			RND[100] = 0-99
@@ -2660,25 +2666,25 @@ function getAffixProbability(imbued) {
 			0x : RND <= 30			31%
 		*/
         /*
-		var plus1 = Math.max(0, 60 - (imbued ? Math.floor(item.level / 2) : 0));
-		var plus2 = Math.max(0, 30 + Math.min(0, 60 - (imbued ? Math.floor(item.level / 2) : 0)));
-		var plus3 = Math.min(100, 10 + (imbued ? Math.floor(item.level / 2) : 0));
+		var plus1 = Math.max(0, 60 - (imbued ? Math.floor(objItemCurrent.level / 2) : 0));
+		var plus2 = Math.max(0, 30 + Math.min(0, 60 - (imbued ? Math.floor(objItemCurrent.level / 2) : 0)));
+		var plus3 = Math.min(100, 10 + (imbued ? Math.floor(objItemCurrent.level / 2) : 0));
 		
-		var skill0 = Math.max(0, 31 - (imbued ? item.level : 0));
-		var skill1 = Math.max(0, 40 + Math.min(0, 31 - (imbued ? item.level : 0)));
-		var skill2 = Math.max(0, 20 + Math.min(0, 71 - (imbued ? item.level : 0)));
-		var skill3 = Math.min(100, 9 + (imbued ? item.level : 0));
+		var skill0 = Math.max(0, 31 - (imbued ? objItemCurrent.level : 0));
+		var skill1 = Math.max(0, 40 + Math.min(0, 31 - (imbued ? objItemCurrent.level : 0)));
+		var skill2 = Math.max(0, 20 + Math.min(0, 71 - (imbued ? objItemCurrent.level : 0)));
+		var skill3 = Math.min(100, 9 + (imbued ? objItemCurrent.level : 0));
 
 		var avgSmodNum = ((skill0*0) + (skill1*1) + (skill2*2) + (skill3*3)) / 100 // Average number of smods given weighting of 0/1/2/3 skills
 		
-		for (i = 0; i < affixGroups[2].length; i++) {
-			if (item[affixGroups[2][i]] === -1) continue; 										// no smod set
-			var smod = skills[item[affixGroups[2][i]]]; 										// entire smod row from table
+		for (i = 0; i < listGroupAffix[2].length; i++) {
+			if (objItemCurrent[listGroupAffix[2][i]] === -1) continue; 										// no smod set
+			var smod = skills[objItemCurrent[listGroupAffix[2][i]]]; 										// entire smod row from table
 			var smodGroupIndex = [1, 6, 12, 18, 24, 30].indexOf(smod.reqlevel); 				// smod group index, 0 = level 1 skills, 1 = level 6 skills, etc..
-			var smodGroup = item.smods[smod.reqlevel]; 											// list of skills in the group
-			var smodGroupf = item.smodsf[smod.reqlevel]; 										// list of forbidden skills in the group
-			var forbidden = item.smodsf[smod.reqlevel].indexOf(smod.id) !== -1; 				// is the smod forbidden (bool)
-			var smodGroupChance = item.smodtierodds[smodGroupIndex]; 							// Odds of hitting this smod group (val in percentage)
+			var smodGroup = objItemCurrent.smods[smod.reqlevel]; 											// list of skills in the group
+			var smodGroupf = objItemCurrent.smodsf[smod.reqlevel]; 										// list of forbidden skills in the group
+			var forbidden = objItemCurrent.smodsf[smod.reqlevel].indexOf(smod.id) !== -1; 				// is the smod forbidden (bool)
+			var smodGroupChance = objItemCurrent.smodtierodds[smodGroupIndex]; 							// Odds of hitting this smod group (val in percentage)
 			
 			var existingSmod = ( (smodGroupChance / 100) * (avgSmodNum - 1) ) / (smodGroup.length - smodGroupf.length); // Imprecise, but I can't come up with something better :(
 			
@@ -2690,14 +2696,14 @@ function getAffixProbability(imbued) {
 			var smodPickChance = (smodGroup.length - (smodGroupf.length + existingSmod)) * (Math.pow(smodGroup.length,6) / (Math.pow(smodGroup.length,6) - Math.pow(smodGroupf.length + existingSmod,6))) // 1/val Chance of getting a specific non forbidden smod  
 			var smodfPickChance = Math.pow(smodGroup.length / (smodGroupf.length + existingSmod), 5) * smodGroup.length; // 1/val chance of getting a specific forbidden smod
 			
-			//var smodOverrideOdds = (Math.pow(smodGroup.length - 1, 6) / (item.smodtierodds[smodGroupIndex] / 100)) / (avgSmodNum - 1); // 1/val Odds of this smod being overridden by a DIFFERENT not possible... different smod doesn't go over the other.. smod (any avg number of smods over 1.00).
+			//var smodOverrideOdds = (Math.pow(smodGroup.length - 1, 6) / (objItemCurrent.smodtierodds[smodGroupIndex] / 100)) / (avgSmodNum - 1); // 1/val Odds of this smod being overridden by a DIFFERENT not possible... different smod doesn't go over the other.. smod (any avg number of smods over 1.00).
 
 			// 1/val odds of hitting this specific smod group, and the specific smod in the group, and accounting for odds to be overriden by a different smod roll afterwards and the odds of getting another shot at the smod on the other 0-2 extra possible smod rolls
 			smodchance = ((forbidden ? smodfPickChance : smodPickChance) / (smodGroupChance / 100));
 			//smodchance *= (1 + (1 / smodOverrideOdds));
 			smodchance /= avgSmodNum; 
 
-			switch (item[affixGroups[2][i]+'-range1']) {
+			switch (objItemCurrent[listGroupAffix[2][i]+'-range1']) {
 			case 1: // At least +1 to this skill (100% chance)
 				smodchance /= (plus1 + plus2 + plus3) / 100;
 				break;
@@ -2713,33 +2719,33 @@ function getAffixProbability(imbued) {
 		}
 		*/
 
-        var plus1 = Math.max(0, 60 - (imbued ? Math.floor(item.level / 2) : 0));
-        var plus2 = Math.max(0, 30 + Math.min(0, 60 - (imbued ? Math.floor(item.level / 2) : 0)));
-        var plus3 = Math.min(100, 10 + (imbued ? Math.floor(item.level / 2) : 0));
+        var plus1 = Math.max(0, 60 - (imbued ? Math.floor(objItemCurrent.level / 2) : 0));
+        var plus2 = Math.max(0, 30 + Math.min(0, 60 - (imbued ? Math.floor(objItemCurrent.level / 2) : 0)));
+        var plus3 = Math.min(100, 10 + (imbued ? Math.floor(objItemCurrent.level / 2) : 0));
 
-        var skill0 = Math.max(0, 31 - (imbued ? item.level : 0));
-        var skill1 = Math.max(0, 40 + Math.min(0, 31 - (imbued ? item.level : 0)));
-        var skill2 = Math.max(0, 20 + Math.min(0, 71 - (imbued ? item.level : 0)));
-        var skill3 = Math.min(100, 9 + (imbued ? item.level : 0));
+        var skill0 = Math.max(0, 31 - (imbued ? objItemCurrent.level : 0));
+        var skill1 = Math.max(0, 40 + Math.min(0, 31 - (imbued ? objItemCurrent.level : 0)));
+        var skill2 = Math.max(0, 20 + Math.min(0, 71 - (imbued ? objItemCurrent.level : 0)));
+        var skill3 = Math.min(100, 9 + (imbued ? objItemCurrent.level : 0));
 
         var avgSmodNum = (skill0 * 0 + skill1 * 1 + skill2 * 2 + skill3 * 3) / 100; // Average number of smods given weighting of 0/1/2/3 skills
         var smods = [];
 
-        for (i = 0; i < affixGroups[2].length; i++) {
-            if (item[affixGroups[2][i]] === -1) continue; // no smod set
-            var row = skills[item[affixGroups[2][i]]];
+        for (i = 0; i < listGroupAffix[2].length; i++) {
+            if (objItemCurrent[listGroupAffix[2][i]] === -1) continue; // no smod set
+            var row = skills[objItemCurrent[listGroupAffix[2][i]]];
             var smod = {};
 
             smod.id = row.id;
             smod.reqlevel = row.reqlevel;
             smod.groupid = [1, 6, 12, 18, 24, 30].indexOf(row.reqlevel);
-            smod.group = item.smods[row.reqlevel];
-            smod.groupf = item.smodsf[row.reqlevel];
-            //smod.groupchance = 100 / item.smodtierodds[smod.groupid];
-            smod.groupchance = item.smodtierodds[smod.groupid] / 100;
-            smod.forbidden = item.smodsf[row.reqlevel].indexOf(smod.id) !== -1;
+            smod.group = objItemCurrent.smods[row.reqlevel];
+            smod.groupf = objItemCurrent.smodsf[row.reqlevel];
+            //smod.groupchance = 100 / objItemCurrent.smodtierodds[smod.groupid];
+            smod.groupchance = objItemCurrent.smodtierodds[smod.groupid] / 100;
+            smod.forbidden = objItemCurrent.smodsf[row.reqlevel].indexOf(smod.id) !== -1;
 
-            switch (item[affixGroups[2][i] + '-range1']) {
+            switch (objItemCurrent[listGroupAffix[2][i] + '-range1']) {
                 case 1: // At least +1 to this skill (100% chance)
                     smod.pluschance = (plus1 + plus2 + plus3) / 100;
                     break;
@@ -2771,7 +2777,7 @@ function getAffixProbability(imbued) {
         }
 
         switch (
-            item.smodnum // Switch sur le nombre de skills que le user a select
+            objItemCurrent.smodnum // Switch sur le nombre de skills que le user a select
         ) {
             case 1:
                 // 1 lottery
@@ -3772,8 +3778,8 @@ function getAffixProbability(imbued) {
         }
     }
 
-    if (item.autoaffix !== -1) {
-        extra *= item.autoaffixtotalfreq / item.autoaffixfreq;
+    if (objItemCurrent.autoaffix !== -1) {
+        extra *= objItemCurrent.autoaffixtotalfreq / objItemCurrent.autoaffixfreq;
     }
 
     var addRange = function (min, max, val) {
@@ -3786,63 +3792,83 @@ function getAffixProbability(imbued) {
     // Calc chances of getting a value >= slider value
     for (i = 1; i < 5; i++) {
         // 1-4 cause safety crafts have four ranges...
-        if (item.hasOwnProperty('p1-range' + i)) addRange(item['p1-min' + i], item['p1-max' + i], item['p1-range' + i]);
-        if (item.hasOwnProperty('p2-range' + i)) addRange(item['p2-min' + i], item['p2-max' + i], item['p2-range' + i]);
-        if (item.hasOwnProperty('p3-range' + i)) addRange(item['p3-min' + i], item['p3-max' + i], item['p3-range' + i]);
-        if (item.hasOwnProperty('s1-range' + i)) addRange(item['s1-min' + i], item['s1-max' + i], item['s1-range' + i]);
-        if (item.hasOwnProperty('s2-range' + i)) addRange(item['s2-min' + i], item['s2-max' + i], item['s2-range' + i]);
-        if (item.hasOwnProperty('s3-range' + i)) addRange(item['s3-min' + i], item['s3-max' + i], item['s3-range' + i]);
-        if (item.hasOwnProperty('craft-range' + i))
-            addRange(item['craft-min' + i], item['craft-max' + i], item['craft-range' + i]);
-        if (item.hasOwnProperty('autoaffix-range' + i))
-            addRange(item['autoaffix-min' + i], item['autoaffix-max' + i], item['autoaffix-range' + i]);
+        if (objItemCurrent.hasOwnProperty('p1-range' + i))
+            addRange(objItemCurrent['p1-min' + i], objItemCurrent['p1-max' + i], objItemCurrent['p1-range' + i]);
+        if (objItemCurrent.hasOwnProperty('p2-range' + i))
+            addRange(objItemCurrent['p2-min' + i], objItemCurrent['p2-max' + i], objItemCurrent['p2-range' + i]);
+        if (objItemCurrent.hasOwnProperty('p3-range' + i))
+            addRange(objItemCurrent['p3-min' + i], objItemCurrent['p3-max' + i], objItemCurrent['p3-range' + i]);
+        if (objItemCurrent.hasOwnProperty('s1-range' + i))
+            addRange(objItemCurrent['s1-min' + i], objItemCurrent['s1-max' + i], objItemCurrent['s1-range' + i]);
+        if (objItemCurrent.hasOwnProperty('s2-range' + i))
+            addRange(objItemCurrent['s2-min' + i], objItemCurrent['s2-max' + i], objItemCurrent['s2-range' + i]);
+        if (objItemCurrent.hasOwnProperty('s3-range' + i))
+            addRange(objItemCurrent['s3-min' + i], objItemCurrent['s3-max' + i], objItemCurrent['s3-range' + i]);
+        if (objItemCurrent.hasOwnProperty('craft-range' + i))
+            addRange(
+                objItemCurrent['craft-min' + i],
+                objItemCurrent['craft-max' + i],
+                objItemCurrent['craft-range' + i]
+            );
+        if (objItemCurrent.hasOwnProperty('autoaffix-range' + i))
+            addRange(
+                objItemCurrent['autoaffix-min' + i],
+                objItemCurrent['autoaffix-max' + i],
+                objItemCurrent['autoaffix-range' + i]
+            );
     }
 
-    if (item.quality !== 4) {
-        if (item.p1 !== -1) chance *= item.p1freq / item.p1groupfreq;
-        if (item.p2 !== -1) chance *= item.p2freq / item.p2groupfreq;
-        if (item.p3 !== -1) chance *= item.p3freq / item.p3groupfreq;
-        if (item.s1 !== -1) chance *= item.s1freq / item.s1groupfreq;
-        if (item.s2 !== -1) chance *= item.s2freq / item.s2groupfreq;
-        if (item.s3 !== -1) chance *= item.s3freq / item.s3groupfreq;
+    if (objItemCurrent.quality !== 4) {
+        if (objItemCurrent.p1 !== -1) chance *= objItemCurrent.p1freq / objItemCurrent.p1groupfreq;
+        if (objItemCurrent.p2 !== -1) chance *= objItemCurrent.p2freq / objItemCurrent.p2groupfreq;
+        if (objItemCurrent.p3 !== -1) chance *= objItemCurrent.p3freq / objItemCurrent.p3groupfreq;
+        if (objItemCurrent.s1 !== -1) chance *= objItemCurrent.s1freq / objItemCurrent.s1groupfreq;
+        if (objItemCurrent.s2 !== -1) chance *= objItemCurrent.s2freq / objItemCurrent.s2groupfreq;
+        if (objItemCurrent.s3 !== -1) chance *= objItemCurrent.s3freq / objItemCurrent.s3groupfreq;
 
-        for (i in pobj) {
-            if (item.p1 !== -1 && pobj[i][0] === magicPrefix[item.p1].group) pobj[i][4] = 1;
-            if (item.p2 !== -1 && pobj[i][0] === magicPrefix[item.p2].group) pobj[i][4] = 1;
-            if (item.p3 !== -1 && pobj[i][0] === magicPrefix[item.p3].group) pobj[i][4] = 1;
-            prefixfreq += pobj[i][1];
-            pgroups.push(pobj[i]);
+        for (i in objPrefix) {
+            if (objItemCurrent.p1 !== -1 && objPrefix[i][0] === magicPrefix[objItemCurrent.p1].group)
+                objPrefix[i][4] = 1;
+            if (objItemCurrent.p2 !== -1 && objPrefix[i][0] === magicPrefix[objItemCurrent.p2].group)
+                objPrefix[i][4] = 1;
+            if (objItemCurrent.p3 !== -1 && objPrefix[i][0] === magicPrefix[objItemCurrent.p3].group)
+                objPrefix[i][4] = 1;
+            prefixfreq += objPrefix[i][1];
+            pgroups.push(objPrefix[i]);
         }
 
-        for (i in sobj) {
-            if (item.s1 !== -1 && sobj[i][0] === magicSuffix[item.s1].group) sobj[i][4] = 1;
-            if (item.s2 !== -1 && sobj[i][0] === magicSuffix[item.s2].group) sobj[i][4] = 1;
-            if (item.s3 !== -1 && sobj[i][0] === magicSuffix[item.s3].group) sobj[i][4] = 1;
-            suffixfreq += sobj[i][1];
-            sgroups.push(sobj[i]);
+        for (i in objSuffix) {
+            if (objItemCurrent.s1 !== -1 && objSuffix[i][0] === magicSuffix[objItemCurrent.s1].group)
+                objSuffix[i][4] = 1;
+            if (objItemCurrent.s2 !== -1 && objSuffix[i][0] === magicSuffix[objItemCurrent.s2].group)
+                objSuffix[i][4] = 1;
+            if (objItemCurrent.s3 !== -1 && objSuffix[i][0] === magicSuffix[objItemCurrent.s3].group)
+                objSuffix[i][4] = 1;
+            suffixfreq += objSuffix[i][1];
+            sgroups.push(objSuffix[i]);
         }
     }
 
-    switch (item.quality) {
+    switch (objItemCurrent.quality) {
         case 4:
-            if (item.p1 !== -1) chance /= item.p1totalfreq / item.p1freq;
-            if (item.p2 !== -1) chance /= item.p2totalfreq / item.p2freq;
-            if (item.p3 !== -1) chance /= item.p3totalfreq / item.p3freq;
-            if (item.s1 !== -1) chance /= item.s1totalfreq / item.s1freq;
-            if (item.s2 !== -1) chance /= item.s2totalfreq / item.s2freq;
-            if (item.s3 !== -1) chance /= item.s3totalfreq / item.s3freq;
+            if (objItemCurrent.p1 !== -1) chance /= objItemCurrent.p1totalfreq / objItemCurrent.p1freq;
+            if (objItemCurrent.p2 !== -1) chance /= objItemCurrent.p2totalfreq / objItemCurrent.p2freq;
+            if (objItemCurrent.p3 !== -1) chance /= objItemCurrent.p3totalfreq / objItemCurrent.p3freq;
+            if (objItemCurrent.s1 !== -1) chance /= objItemCurrent.s1totalfreq / objItemCurrent.s1freq;
+            if (objItemCurrent.s2 !== -1) chance /= objItemCurrent.s2totalfreq / objItemCurrent.s2freq;
+            if (objItemCurrent.s3 !== -1) chance /= objItemCurrent.s3totalfreq / objItemCurrent.s3freq;
 
-            if (item.anum === 2) {
+            if (objItemCurrent.anum === 2) {
                 chance *= 1 / 4; // 25% chance for 1 prefix 1 suffix
             } else {
-                if (item.pnum === 1) chance *= 1 / 2; // 25% chance for 1 prefix, item only has one prefix specified so it could be either this or prefix1 prefix1 (25% + 25%)
-                if (item.snum === 1) chance *= 3 / 4; // 50% chance for 1 suffix, so (25% + 50%)
+                if (objItemCurrent.pnum === 1) chance *= 1 / 2; // 25% chance for 1 prefix, item only has one prefix specified so it could be either this or prefix1 prefix1 (25% + 25%)
+                if (objItemCurrent.snum === 1) chance *= 3 / 4; // 50% chance for 1 suffix, so (25% + 50%)
             }
 
             return Math.round((1 / chance) * extra);
 
         case 6:
-            if (item.amax === 6) {
+            if (objItemCurrent.amax === 6) {
                 addAffix(3, 3, (1 * 1) / 4); // 6
                 addAffix(3, 2, ((1 / 2) * 1) / 4); // 5
                 addAffix(2, 3, ((1 / 2) * 1) / 4); // 5
@@ -3855,7 +3881,7 @@ function getAffixProbability(imbued) {
                 addAffix(0, 3, ((1 / 8) * 1) / 4); // 3
             }
 
-            if (item.amax === 4) {
+            if (objItemCurrent.amax === 4) {
                 addAffix(3, 1, ((5 / 16) * 1) / 2); // 4
                 addAffix(2, 2, ((6 / 16) * 1) / 2); // 4
                 addAffix(1, 3, ((5 / 16) * 1) / 2); // 4
@@ -3867,7 +3893,7 @@ function getAffixProbability(imbued) {
             break;
 
         case 8:
-            if (item.level < 31) {
+            if (objItemCurrent.level < 31) {
                 addAffix(0, 1, ((1 / 2) * 2) / 5); // 1
                 addAffix(1, 0, ((1 / 2) * 2) / 5); // 1
                 addAffix(0, 2, ((1 / 4) * 1) / 5); // 2
@@ -3882,7 +3908,7 @@ function getAffixProbability(imbued) {
                 addAffix(1, 3, ((5 / 16) * 1) / 5); // 4
             }
 
-            if (item.level > 30 && item.level < 51) {
+            if (objItemCurrent.level > 30 && objItemCurrent.level < 51) {
                 addAffix(0, 2, ((1 / 4) * 3) / 5); // 2
                 addAffix(1, 2, ((1 / 2) * 3) / 5); // 2
                 addAffix(2, 0, ((1 / 4) * 3) / 5); // 2
@@ -3895,7 +3921,7 @@ function getAffixProbability(imbued) {
                 addAffix(1, 3, ((5 / 16) * 1) / 5); // 4
             }
 
-            if (item.level > 50 && item.level < 71) {
+            if (objItemCurrent.level > 50 && objItemCurrent.level < 71) {
                 addAffix(3, 0, ((1 / 8) * 4) / 5); // 3
                 addAffix(2, 1, ((3 / 8) * 4) / 5); // 3
                 addAffix(1, 2, ((3 / 8) * 4) / 5); // 3
@@ -3905,7 +3931,7 @@ function getAffixProbability(imbued) {
                 addAffix(1, 3, ((5 / 16) * 1) / 5); // 4
             }
 
-            if (item.level > 70) {
+            if (objItemCurrent.level > 70) {
                 addAffix(3, 1, 5 / 16); // 4
                 addAffix(2, 2, 6 / 16); // 4
                 addAffix(1, 3, 5 / 16); // 4
@@ -3930,19 +3956,19 @@ function updateTables() {
         //cell2.id = label + "-tableval";
     };
 
-    //console.log(stats);
-    tval = {};
+    //console.log(objStat);
+    setObjValueTable({});
 
     for (tableName in tables) {
         t = document.getElementById(tableName + '-Table').tBodies[0];
         t.innerHTML = '';
 
-        if (tableName === 'baseTypes') index = item.classid;
+        if (tableName === 'baseTypes') index = objItemCurrent.classid;
         if (tableName === 'pickit') {
             var row = t.insertRow(0);
             var cell = row.insertCell(0);
 
-            cell.innerHTML = item.pickit;
+            cell.innerHTML = objItemCurrent.pickit;
             cell.title = 'Click to copy pickit line.';
             continue;
         }
@@ -3950,14 +3976,14 @@ function updateTables() {
         for (column in tables[tableName]) {
             switch (column) {
                 case 'chance for affixes':
-                    /*var affixes = [].concat(affixGroups[0],affixGroups[1],affixGroups[3]).reverse();
+                    /*var affixes = [].concat(listGroupAffix[0],listGroupAffix[1],listGroupAffix[3]).reverse();
 				for (i = 0; i < affixes.length; i++) {
-					if (item[affixes[i]] === -1) continue;
-					val = Math.round(item[affixes[i]+'totalfreq'] / item[affixes[i]+'freq']);
-					console.log(item[affixes[i]+'freq'] + ":" + item[affixes[i]+'totalfreq']);
+					if (objItemCurrent[affixes[i]] === -1) continue;
+					val = Math.round(objItemCurrent[affixes[i]+'totalfreq'] / objItemCurrent[affixes[i]+'freq']);
+					console.log(objItemCurrent[affixes[i]+'freq'] + ":" + objItemCurrent[affixes[i]+'totalfreq']);
 					insert(affixes[i] + " chance", 1 + ":" + val, "probability of hitting this affix");
 				}*/
-                    if (item.staffmods && item.quality === 6)
+                    if (objItemCurrent.staffmods && objItemCurrent.quality === 6)
                         insert(
                             'affix chance (imbue)',
                             '1/' + getAffixProbability(true),
@@ -3971,30 +3997,38 @@ function updateTables() {
                     break;
 
                 case 'min ingredient ilvl':
-                    if (item.craft === -1) break;
-                    val = Math.max((Math.max(item.minlevel) - Math.floor(item.charlvl / 2)) * 2, 1);
+                    if (objItemCurrent.craft === -1) break;
+                    val = Math.max((Math.max(objItemCurrent.minlevel) - Math.floor(objItemCurrent.charlvl / 2)) * 2, 1);
                     if (val > 99) val = 'not possible';
                     insert(
                         'min ingredient ilvl',
                         val,
-                        'minimum item level of main recipe ingredient to craft this item at char level: ' + item.charlvl
+                        'minimum item level of main recipe ingredient to craft this item at char level: ' +
+                            objItemCurrent.charlvl
                     );
                     break;
 
                 case 'ideal ingredient ilvl':
-                    if (item.craft === -1) break;
-                    val = Math.max(Math.min((Math.max(item.minlevel, 71) - Math.floor(item.charlvl / 2)) * 2, 99), 1);
+                    if (objItemCurrent.craft === -1) break;
+                    val = Math.max(
+                        Math.min(
+                            (Math.max(objItemCurrent.minlevel, 71) - Math.floor(objItemCurrent.charlvl / 2)) * 2,
+                            99
+                        ),
+                        1
+                    );
                     insert(
                         'ideal ingredient ilvl',
                         val,
-                        'Ideal item level of main recipe ingredient to craft this item at char level: ' + item.charlvl
+                        'Ideal item level of main recipe ingredient to craft this item at char level: ' +
+                            objItemCurrent.charlvl
                     );
                     break;
 
                 case 'min ilvl':
                     insert(
                         'min ilvl',
-                        item.minlevel,
+                        objItemCurrent.minlevel,
                         'minimum item level to make these affixes available on the specific base. for mob drops, the base will not drop unless base specific ilvl is met'
                     );
                     break;
@@ -4004,11 +4038,11 @@ function updateTables() {
                     break;
 
                 case 'color (equipped)':
-                    insert('color (equipped)', item.ecolor.name);
+                    insert('color (equipped)', objItemCurrent.ecolor.name);
                     break;
 
                 case 'color (inv)':
-                    insert('color (inv)', item.icolor.name);
+                    insert('color (inv)', objItemCurrent.icolor.name);
                     break;
 
                 case 'gambleable':
@@ -4020,7 +4054,7 @@ function updateTables() {
                     break;
 
                 case 'affix level':
-                    insert('affix level', item.alvl);
+                    insert('affix level', objItemCurrent.alvl);
                     break;
 
                 case 'nameable':
@@ -4036,74 +4070,85 @@ function updateTables() {
                 case 'min dmg (total)':
                 case 'min throw dmg (total)':
                 case 'min 2h dmg (total)':
-                    if (item.classid > 305) break;
-                    val = baseTypes[item.classid][tables[tableName][column]];
+                    if (objItemCurrent.classid > 305) break;
+                    val = baseTypes[objItemCurrent.classid][tables[tableName][column]];
                     if (!val) break;
-                    if (item.ethereal) val = Math.floor(val * 1.5);
-                    val = Math.floor(val * (1 + (stats['dmg%'] || 0) / 100.0));
-                    val += stats['dmg-min'] || 0; //dmg/lvl is always for max damage
+                    if (objItemCurrent.ethereal) val = Math.floor(val * 1.5);
+                    val = Math.floor(val * (1 + (objStat['dmg%'] || 0) / 100.0));
+                    val += objStat['dmg-min'] || 0; //dmg/lvl is always for max damage
                     insert(column, val, 'with stats included');
                     break;
 
                 case 'max dmg (total)':
                 case 'max throw dmg (total)':
                 case 'max 2h dmg (total)':
-                    if (item.classid > 305) break;
-                    val = baseTypes[item.classid][tables[tableName][column]];
+                    if (objItemCurrent.classid > 305) break;
+                    val = baseTypes[objItemCurrent.classid][tables[tableName][column]];
                     if (!val) break;
-                    if (item.ethereal) val = Math.floor(val * 1.5);
+                    if (objItemCurrent.ethereal) val = Math.floor(val * 1.5);
                     val = Math.floor(
                         val *
                             (1 +
-                                ((stats['dmg%'] || 0) + Math.floor(((stats['dmg%/lvl'] || 0) * item.charlvl) / 8)) /
+                                ((objStat['dmg%'] || 0) +
+                                    Math.floor(((objStat['dmg%/lvl'] || 0) * objItemCurrent.charlvl) / 8)) /
                                     100.0)
                     );
-                    val += (stats['dmg-max'] || 0) + Math.floor(((stats['dmg/lvl'] || 0) * item.charlvl) / 8);
+                    val +=
+                        (objStat['dmg-max'] || 0) +
+                        Math.floor(((objStat['dmg/lvl'] || 0) * objItemCurrent.charlvl) / 8);
                     insert(column, val, 'with stats included');
                     break;
 
                 case 'min defense (total)':
                     val =
-                        stats['ac%'] || stats['ac%/lvl']
-                            ? baseTypes[item.classid].maxac + 1
-                            : baseTypes[item.classid].minac;
+                        objStat['ac%'] || objStat['ac%/lvl']
+                            ? baseTypes[objItemCurrent.classid].maxac + 1
+                            : baseTypes[objItemCurrent.classid].minac;
                     if (!val) break;
-                    if ([91, 92, 93, 94].indexOf(item.craft) !== -1 && dstats['ac%'].affix.hasOwnProperty('name'))
+                    if (
+                        [91, 92, 93, 94].indexOf(objItemCurrent.craft) !== -1 &&
+                        objStatDefense['ac%'].affix.hasOwnProperty('name')
+                    )
                         val += 1; // Thanks @Kaylin
-                    if (item.ethereal) val = Math.floor(val * 1.5);
+                    if (objItemCurrent.ethereal) val = Math.floor(val * 1.5);
                     val = Math.floor(
                         val *
                             (1 +
-                                ((stats['ac%'] || 0) + Math.floor(((stats['ac%/lvl'] || 0) * item.charlvl) / 8)) /
+                                ((objStat['ac%'] || 0) +
+                                    Math.floor(((objStat['ac%/lvl'] || 0) * objItemCurrent.charlvl) / 8)) /
                                     100.0)
                     );
-                    val += (stats.ac || 0) + Math.floor(((stats['ac/lvl'] || 0) * item.charlvl) / 8);
+                    val += (objStat.ac || 0) + Math.floor(((objStat['ac/lvl'] || 0) * objItemCurrent.charlvl) / 8);
                     insert(column, val, 'with stats included');
                     break;
 
                 case 'max defense (total)':
                     val =
-                        stats['ac%'] || stats['ac%/lvl']
-                            ? baseTypes[item.classid].maxac + 1
-                            : baseTypes[item.classid].maxac;
+                        objStat['ac%'] || objStat['ac%/lvl']
+                            ? baseTypes[objItemCurrent.classid].maxac + 1
+                            : baseTypes[objItemCurrent.classid].maxac;
                     if (!val) break;
-                    if ([91, 92, 93, 94].indexOf(item.craft) !== -1 && dstats['ac%'].affix.hasOwnProperty('name'))
+                    if (
+                        [91, 92, 93, 94].indexOf(objItemCurrent.craft) !== -1 &&
+                        objStatDefense['ac%'].affix.hasOwnProperty('name')
+                    )
                         val += 1; // Thanks @Kaylin
-                    if (item.ethereal) val = Math.floor(val * 1.5);
+                    if (objItemCurrent.ethereal) val = Math.floor(val * 1.5);
                     val = Math.floor(
                         val *
                             (1 +
-                                ((stats['ac%'] || 0) + Math.floor(((stats['ac%/lvl'] || 0) * item.charlvl) / 8)) /
+                                ((objStat['ac%'] || 0) +
+                                    Math.floor(((objStat['ac%/lvl'] || 0) * objItemCurrent.charlvl) / 8)) /
                                     100.0)
                     );
-                    val += (stats.ac || 0) + Math.floor(((stats['ac/lvl'] || 0) * item.charlvl) / 8);
+                    val += (objStat.ac || 0) + Math.floor(((objStat['ac/lvl'] || 0) * objItemCurrent.charlvl) / 8);
                     insert(column, val, 'with stats included');
                     break;
 
                 case 'req strength (total)':
                 case 'req dexterity (total)':
-                    val = stats[tables[tableName][column]] || 0;
-                    val = val - Math.floor(val * (Math.abs(stats.ease || 0) / 100));
+                    val = objStat[tables[tableName][column]] || 0;
+                    val = val - Math.floor(val * (Math.abs(objStat.ease || 0) / 100));
                     if (!val) break;
                     insert(column, val, 'with stats included');
                     break;
@@ -4112,22 +4157,27 @@ function updateTables() {
                 case 'reqdex':
                     val = window[tableName][index][column];
                     if (!window[tableName][index][column]) break;
-                    if (item.ethereal) val -= 10;
+                    if (objItemCurrent.ethereal) val -= 10;
                     insert(tables[tableName][column], val);
                     break;
 
                 case 'gemsockets':
-                    if (item.maxsockets) {
-                        tval[column] = item.maxsockets;
-                        insert(tables[tableName][column], item.maxsockets, 'considers ilvl and basetype');
+                    if (objItemCurrent.maxsockets) {
+                        objValueTable[column] = objItemCurrent.maxsockets;
+                        insert(tables[tableName][column], objItemCurrent.maxsockets, 'considers ilvl and basetype');
                     }
                     break;
 
                 case 'durability':
                     val = window[tableName][index][column];
-                    if (!val || baseTypes[item.classid].stackable || baseTypes[item.classid].nodurability) break;
-                    if (item.ethereal) val = Math.floor(val / 2) + 1;
-                    tval[column] = val;
+                    if (
+                        !val ||
+                        baseTypes[objItemCurrent.classid].stackable ||
+                        baseTypes[objItemCurrent.classid].nodurability
+                    )
+                        break;
+                    if (objItemCurrent.ethereal) val = Math.floor(val / 2) + 1;
+                    objValueTable[column] = val;
                     insert(tables[tableName][column], val);
                     break;
 
@@ -4141,15 +4191,15 @@ function updateTables() {
                 case '2handmindam':
                     val = window[tableName][index][column];
                     if (!val) break;
-                    if (item.ethereal) val = Math.floor(val * 1.5);
-                    //stats[column] = val;
-                    tval[column] = val;
+                    if (objItemCurrent.ethereal) val = Math.floor(val * 1.5);
+                    //objStat[column] = val;
+                    objValueTable[column] = val;
                     insert(tables[tableName][column], val);
                     break;
 
                 default:
                     if (window[tableName][index][column]) {
-                        tval[column] = window[tableName][index][column];
+                        objValueTable[column] = window[tableName][index][column];
                         insert(tables[tableName][column], window[tableName][index][column]);
                     }
             }
@@ -4171,7 +4221,7 @@ function pickitToClipboard() {
         var row = t.insertRow(0);
         var cell = row.insertCell(0);
 
-        cell.innerHTML = item.pickit;
+        cell.innerHTML = objItemCurrent.pickit;
         cell.title = 'Click to copy pickit line.';
     }, 1000);
 
@@ -4185,7 +4235,7 @@ function pickitToClipboard() {
     textArea.style.outline = 'none';
     textArea.style.boxShadow = 'none';
     textArea.style.background = 'transparent';
-    textArea.value = item.pickit;
+    textArea.value = objItemCurrent.pickit;
 
     document.body.appendChild(textArea);
     textArea.focus();
@@ -4205,22 +4255,24 @@ function pickitToClipboard() {
 function getPickit() {
     let i,
         pickit = '';
-    var iname = (locales[baseTypes[item.classid].namestr] || baseTypes[item.classid].name).replace(/ /g, '');
+    var iname = (
+        listLocale[baseTypes[objItemCurrent.classid].namestr] || baseTypes[objItemCurrent.classid].name
+    ).replace(/ /g, '');
 
     pickit += '[name] == ' + iname + ' ';
-    pickit += '&& [quality] == ' + { 4: 'magic', 6: 'rare', 8: 'crafted' }[item.quality] + ' ';
-    pickit += '&& [flag] ' + (item.ethereal ? '=' : '!') + '= ethereal ';
+    pickit += '&& [quality] == ' + { 4: 'magic', 6: 'rare', 8: 'crafted' }[objItemCurrent.quality] + ' ';
+    pickit += '&& [flag] ' + (objItemCurrent.ethereal ? '=' : '!') + '= ethereal ';
 
     const statList = [];
 
-    for (var stat in stats) {
+    for (var stat in objStat) {
         switch (stat) {
             case 'cold-len':
             case 'pois-len':
                 break;
 
             case 'ease':
-                statList.push('[' + ARR_NAME_STAT[stat] + '] <= ' + stats[stat]);
+                statList.push('[' + objNameStat[stat] + '] <= ' + objStat[stat]);
                 break;
 
             case 'rep-dur':
@@ -4228,35 +4280,38 @@ function getPickit() {
             case 'indestruct':
             case 'dmg/lvl':
             case 'att/lvl':
-                statList.push('[' + ARR_NAME_STAT[stat] + '] >= 1');
+                statList.push('[' + objNameStat[stat] + '] >= 1');
                 break;
 
             case 'dmg-min':
             case 'dmg-max':
-                statList.push('[plus' + ARR_NAME_STAT[stat] + '] >= ' + stats[stat]);
+                statList.push('[plus' + objNameStat[stat] + '] >= ' + objStat[stat]);
                 break;
 
             case 'charged':
             case 'hit-skill':
             case 'gethit-skill':
             case 'att-skill':
-                statList.push('[' + ARR_NAME_STAT[stat] + '] == ' + stats[stat]);
+                statList.push('[' + objNameStat[stat] + '] == ' + objStat[stat]);
                 break;
 
             case 'res-all':
-                statList.push('[fireresist]+[coldresist]+[lightresist]+[poisonresist] >= ' + stats[stat] * 4);
+                statList.push('[fireresist]+[coldresist]+[lightresist]+[poisonresist] >= ' + objStat[stat] * 4);
                 break;
 
             default:
-                statList.push('[' + ARR_NAME_STAT[stat] + '] >= ' + stats[stat]);
+                statList.push('[' + objNameStat[stat] + '] >= ' + objStat[stat]);
                 break;
         }
     }
 
     for (i = 1; i < 4; i++) {
-        if (item['smod' + i] === -1) continue;
+        if (objItemCurrent['smod' + i] === -1) continue;
         statList.push(
-            '[skill' + skills[item['smod' + i]].skill.replace(/ /g, '') + '] >= ' + item['smod' + i + '-range1']
+            '[skill' +
+                skills[objItemCurrent['smod' + i]].skill.replace(/ /g, '') +
+                '] >= ' +
+                objItemCurrent['smod' + i + '-range1']
         );
     }
 
@@ -4265,38 +4320,39 @@ function getPickit() {
         pickit += statList.join(' && ');
     }
 
-    item.pickit = pickit;
+    objItemCurrent.pickit = pickit;
     //console.log(pickit);
 }
 
 function getItemCrafts() {
     let i, craftBase;
 
-    item.crafts = [];
+    objItemCurrent.crafts = [];
 
     for (i = 0; i < cubeMain.length; i++) {
         if (cubeMain[i]['input 2'] !== 'jew' || cubeMain[i]['numinputs'] !== 4) continue; //Only check crafting recipes
         craftBase = cubeMain[i]['input 1'].split(',')[0];
 
         if (
-            (baseTypes[item.classid].hasOwnProperty('normcode') && baseTypes[item.classid]['normcode'] === craftBase) ||
-            item.types.indexOf(craftBase) > -1
+            (baseTypes[objItemCurrent.classid].hasOwnProperty('normcode') &&
+                baseTypes[objItemCurrent.classid]['normcode'] === craftBase) ||
+            objItemCurrent.types.indexOf(craftBase) > -1
         ) {
-            item.crafts.push(i);
+            objItemCurrent.crafts.push(i);
         }
     }
 }
 
 function getAffixFreqs() {
-    item.p1freq = item.p1 === -1 ? 0 : magicPrefix[item.p1].frequency;
-    item.p2freq = item.p2 === -1 ? 0 : magicPrefix[item.p2].frequency;
-    item.p3freq = item.p3 === -1 ? 0 : magicPrefix[item.p3].frequency;
+    objItemCurrent.p1freq = objItemCurrent.p1 === -1 ? 0 : magicPrefix[objItemCurrent.p1].frequency;
+    objItemCurrent.p2freq = objItemCurrent.p2 === -1 ? 0 : magicPrefix[objItemCurrent.p2].frequency;
+    objItemCurrent.p3freq = objItemCurrent.p3 === -1 ? 0 : magicPrefix[objItemCurrent.p3].frequency;
 
-    item.s1freq = item.s1 === -1 ? 0 : magicSuffix[item.s1].frequency;
-    item.s2freq = item.s2 === -1 ? 0 : magicSuffix[item.s2].frequency;
-    item.s3freq = item.s3 === -1 ? 0 : magicSuffix[item.s3].frequency;
+    objItemCurrent.s1freq = objItemCurrent.s1 === -1 ? 0 : magicSuffix[objItemCurrent.s1].frequency;
+    objItemCurrent.s2freq = objItemCurrent.s2 === -1 ? 0 : magicSuffix[objItemCurrent.s2].frequency;
+    objItemCurrent.s3freq = objItemCurrent.s3 === -1 ? 0 : magicSuffix[objItemCurrent.s3].frequency;
 
-    item.autoaffixfreq = item.autoaffix === -1 ? 0 : autoMagic[item.autoaffix].frequency;
+    objItemCurrent.autoaffixfreq = objItemCurrent.autoaffix === -1 ? 0 : autoMagic[objItemCurrent.autoaffix].frequency;
 }
 
 function generateItem() {
@@ -4306,17 +4362,17 @@ function generateItem() {
     getImplicits();
 
     ItemScreenshot.create({
-        image: item.invfile,
-        color: item.icolor,
-        ethereal: item.ethereal,
-        sockets: Math.min(item.maxsockets, stats['sock'] || 0),
-        desc: [].concat(implicits, explicits),
+        image: objItemCurrent.invfile,
+        color: objItemCurrent.icolor,
+        ethereal: objItemCurrent.ethereal,
+        sockets: Math.min(objItemCurrent.maxsockets, objStat['sock'] || 0),
+        desc: [].concat(listImplicit, listExplicit),
     });
 }
 
 function getInvFile() {
     // invfile overrides
-    switch (item.classid) {
+    switch (objItemCurrent.classid) {
         case 603: // Small charm
             return 'invch1';
         case 604: // Large charm
@@ -4327,7 +4383,7 @@ function getInvFile() {
             return 'invjw5';
     }
 
-    return baseTypes[item.classid].invfile;
+    return baseTypes[objItemCurrent.classid].invfile;
 }
 
 function filterRareNames(p) {
@@ -4342,7 +4398,7 @@ function filterRareNames(p) {
     div = document.getElementById(nameType + '-Div');
     sel = document.getElementById(nameType + '-Select');
 
-    if (item.quality === 4) {
+    if (objItemCurrent.quality === 4) {
         div.style.display = 'none';
     } else {
         div.style.display = 'block';
@@ -4352,12 +4408,12 @@ function filterRareNames(p) {
         opt = document.getElementById(nameType + '-' + i);
 
         if (
-            item.types.indexOf(nameTable[i].itype1) === -1 &&
-            item.types.indexOf(nameTable[i].itype2) === -1 &&
-            item.types.indexOf(nameTable[i].itype3) === -1 &&
-            item.types.indexOf(nameTable[i].itype4) === -1 &&
-            item.types.indexOf(nameTable[i].itype5) === -1 &&
-            item.types.indexOf(nameTable[i].itype6) === -1
+            objItemCurrent.types.indexOf(nameTable[i].itype1) === -1 &&
+            objItemCurrent.types.indexOf(nameTable[i].itype2) === -1 &&
+            objItemCurrent.types.indexOf(nameTable[i].itype3) === -1 &&
+            objItemCurrent.types.indexOf(nameTable[i].itype4) === -1 &&
+            objItemCurrent.types.indexOf(nameTable[i].itype5) === -1 &&
+            objItemCurrent.types.indexOf(nameTable[i].itype6) === -1
         ) {
             opt.disabled = true;
         } else {
@@ -4366,8 +4422,8 @@ function filterRareNames(p) {
         }
     }
 
-    if (document.getElementById(nameType + '-' + item[nameType]).disabled) {
-        item[nameType] = valid;
+    if (document.getElementById(nameType + '-' + objItemCurrent[nameType]).disabled) {
+        objItemCurrent[nameType] = valid;
         sel.value = valid;
     }
 }
@@ -4377,27 +4433,32 @@ function getTitle() {
         a,
         base;
 
-    base = locales[baseTypes[item.classid].namestr] || baseTypes[item.classid].name;
+    base = listLocale[baseTypes[objItemCurrent.classid].namestr] || baseTypes[objItemCurrent.classid].name;
 
-    if (item.quality === 4) {
-        if (item.p1 !== -1) name += locales[magicPrefix[item.p1].name] + ' ';
-        if (item.p2 !== -1) name += locales[magicPrefix[item.p2].name] + ' ';
-        if (item.p3 !== -1) name += locales[magicPrefix[item.p3].name] + ' ';
+    if (objItemCurrent.quality === 4) {
+        if (objItemCurrent.p1 !== -1) name += listLocale[magicPrefix[objItemCurrent.p1].name] + ' ';
+        if (objItemCurrent.p2 !== -1) name += listLocale[magicPrefix[objItemCurrent.p2].name] + ' ';
+        if (objItemCurrent.p3 !== -1) name += listLocale[magicPrefix[objItemCurrent.p3].name] + ' ';
         name += base;
-        if (item.s1 !== -1) name += ' ' + locales[magicSuffix[item.s1].name];
-        if (item.s2 !== -1) name += ' ' + locales[magicSuffix[item.s2].name];
-        if (item.s3 !== -1) name += ' ' + locales[magicSuffix[item.s3].name];
+        if (objItemCurrent.s1 !== -1) name += ' ' + listLocale[magicSuffix[objItemCurrent.s1].name];
+        if (objItemCurrent.s2 !== -1) name += ' ' + listLocale[magicSuffix[objItemCurrent.s2].name];
+        if (objItemCurrent.s3 !== -1) name += ' ' + listLocale[magicSuffix[objItemCurrent.s3].name];
     } else {
-        name = locales[rarePrefix[item.namepre].name] + ' ' + locales[rareSuffix[item.namesuf].name] + ' ' + base;
+        name =
+            listLocale[rarePrefix[objItemCurrent.namepre].name] +
+            ' ' +
+            listLocale[rareSuffix[objItemCurrent.namesuf].name] +
+            ' ' +
+            base;
     }
 
-    item.title = name;
+    objItemCurrent.title = name;
 }
 
 function saveImage(imgDiv) {
     var a = document.createElement('a');
     a.href = imgDiv.firstChild.toDataURL();
-    a.download = item.title;
+    a.download = objItemCurrent.title;
     a.click();
 
     return true;
@@ -4405,87 +4466,87 @@ function saveImage(imgDiv) {
 
 function update(control) {
     if (!control) control = { id: 'none-none' };
-    stats = {};
-    dstats = {};
+    setObjStat({});
+    setObjDefault({});
 
     var controlGroups = control.id.split('-'),
         i;
 
-    item.quality = +document.getElementById('quality-Select').value;
-    item.classid = +document.getElementById('classid-Select').value;
-    item.namepre = +document.getElementById('namepre-Select').value;
-    item.namesuf = +document.getElementById('namesuf-Select').value;
-    item.ethereal = +document.getElementById('ethereal-Select').value;
-    item.expansion = +document.getElementById('expansion-Select').value;
-    item.level = +document.getElementById('level-Select').value;
-    item.charlvl = +document.getElementById('charlvl-Select').value;
-    item.charclassid = +document.getElementById('charclassid-Select').value;
-    item.p1 = +document.getElementById('p1-Select').value;
-    item.p2 = +document.getElementById('p2-Select').value;
-    item.p3 = +document.getElementById('p3-Select').value;
-    item.s1 = +document.getElementById('s1-Select').value;
-    item.s2 = +document.getElementById('s2-Select').value;
-    item.s3 = +document.getElementById('s3-Select').value;
-    item.smod1 = +document.getElementById('smod1-Select').value;
-    item.smod2 = +document.getElementById('smod2-Select').value;
-    item.smod3 = +document.getElementById('smod3-Select').value;
-    item.craft = +document.getElementById('craft-Select').value;
-    item.autoaffix = +document.getElementById('autoaffix-Select').value;
-    item.type = baseTypes[item.classid].type;
-    item.autogroup = baseTypes[item.classid]['auto prefix'];
+    objItemCurrent.quality = +document.getElementById('quality-Select').value;
+    objItemCurrent.classid = +document.getElementById('classid-Select').value;
+    objItemCurrent.namepre = +document.getElementById('namepre-Select').value;
+    objItemCurrent.namesuf = +document.getElementById('namesuf-Select').value;
+    objItemCurrent.ethereal = +document.getElementById('ethereal-Select').value;
+    objItemCurrent.expansion = +document.getElementById('expansion-Select').value;
+    objItemCurrent.level = +document.getElementById('level-Select').value;
+    objItemCurrent.charlvl = +document.getElementById('charlvl-Select').value;
+    objItemCurrent.charclassid = +document.getElementById('charclassid-Select').value;
+    objItemCurrent.p1 = +document.getElementById('p1-Select').value;
+    objItemCurrent.p2 = +document.getElementById('p2-Select').value;
+    objItemCurrent.p3 = +document.getElementById('p3-Select').value;
+    objItemCurrent.s1 = +document.getElementById('s1-Select').value;
+    objItemCurrent.s2 = +document.getElementById('s2-Select').value;
+    objItemCurrent.s3 = +document.getElementById('s3-Select').value;
+    objItemCurrent.smod1 = +document.getElementById('smod1-Select').value;
+    objItemCurrent.smod2 = +document.getElementById('smod2-Select').value;
+    objItemCurrent.smod3 = +document.getElementById('smod3-Select').value;
+    objItemCurrent.craft = +document.getElementById('craft-Select').value;
+    objItemCurrent.autoaffix = +document.getElementById('autoaffix-Select').value;
+    objItemCurrent.type = baseTypes[objItemCurrent.classid].type;
+    objItemCurrent.autogroup = baseTypes[objItemCurrent.classid]['auto prefix'];
 
     getItemTypes();
-    item.invfile = getInvFile();
-    item.alvl = getAffixLevel();
+    objItemCurrent.invfile = getInvFile();
+    objItemCurrent.alvl = getAffixLevel();
 
-    if (item.maxquality === 4 && item.quality !== 4) {
+    if (objItemCurrent.maxquality === 4 && objItemCurrent.quality !== 4) {
         document.getElementById('quality-Select').value = 4;
-        item.quality = 4;
+        objItemCurrent.quality = 4;
     }
 
-    if (baseTypes[item.classid].expansion) {
+    if (baseTypes[objItemCurrent.classid].expansion) {
         //Force expansion mods when using expansion only item types
         document.getElementById('expansion-Select').value = 1;
-        item.expansion = 1;
+        objItemCurrent.expansion = 1;
     }
 
     if (
-        (!item.expansion || item.quality === 8 || baseTypes[item.classid].nodurability) &&
-        item.ethereal &&
-        item.classid !== 225
+        (!objItemCurrent.expansion || objItemCurrent.quality === 8 || baseTypes[objItemCurrent.classid].nodurability) &&
+        objItemCurrent.ethereal &&
+        objItemCurrent.classid !== 225
     ) {
         //Force non eth items to be non eth
         document.getElementById('ethereal-Select').value = 0;
-        item.ethereal = 0;
+        objItemCurrent.ethereal = 0;
     }
 
-    if (!item.staffmods) {
+    if (!objItemCurrent.staffmods) {
         //Remove staffmods if the base can't have them
         document.getElementById('smod1-Select').value = -1;
         document.getElementById('smod2-Select').value = -1;
         document.getElementById('smod3-Select').value = -1;
-        item.smod1 = -1;
-        item.smod2 = -1;
-        item.smod3 = -1;
+        objItemCurrent.smod1 = -1;
+        objItemCurrent.smod2 = -1;
+        objItemCurrent.smod3 = -1;
     }
 
-    if (!item.autogroup) {
+    if (!objItemCurrent.autogroup) {
         document.getElementById('autoaffix-Select').value = -1;
-        item.autoaffix = -1;
+        objItemCurrent.autoaffix = -1;
     }
 
     getItemCrafts();
 
-    if (!item.crafts.length || !item.expansion) {
+    if (!objItemCurrent.crafts.length || !objItemCurrent.expansion) {
         document.getElementById('quality-8').disabled = true;
         document.getElementById('craft-Select').value = -1;
 
         if (+document.getElementById('quality-Select').value === 8) {
             document.getElementById('quality-Select').value = 6;
-            item.quality = 6;
+            objItemCurrent.quality = 6;
         }
 
-        item.craft = -1;
+        objItemCurrent.craft = -1;
     } else {
         document.getElementById('quality-8').disabled = false;
     }
@@ -4497,15 +4558,15 @@ function update(control) {
     setAvoidGroups();
     getStaffTiers();
 
-    filterAffixGroup(magicPrefix, affixGroups[0]);
-    filterAffixGroup(magicSuffix, affixGroups[1]);
-    filterAffixGroup(skills, affixGroups[2]);
+    filterAffixGroup(magicPrefix, listGroupAffix[0]);
+    filterAffixGroup(magicSuffix, listGroupAffix[1]);
+    filterAffixGroup(skills, listGroupAffix[2]);
     filterAffixes(autoMagic, 'autoaffix');
     filterAffixes(cubeMain, 'craft');
 
-    setSliderGroup(magicPrefix, affixGroups[0]);
-    setSliderGroup(magicSuffix, affixGroups[1]);
-    setSliderGroup(skills, affixGroups[2]);
+    setSliderGroup(magicPrefix, listGroupAffix[0]);
+    setSliderGroup(magicSuffix, listGroupAffix[1]);
+    setSliderGroup(skills, listGroupAffix[2]);
     setSlider(autoMagic, 'autoaffix');
     setSlider(cubeMain, 'craft');
 
@@ -4520,9 +4581,9 @@ function update(control) {
     param.setAll();
     updateTables();
 
-    //console.log(item);
-    //console.log(dstats);
-    firstLoad = false;
+    //console.log(objItemCurrent);
+    //console.log(objStatDefense);
+    setIsLoadedFirst(false);
 }
 
 const classidSelect = document.getElementById('classid-Select');
