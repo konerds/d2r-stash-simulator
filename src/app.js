@@ -42,14 +42,11 @@ import {
     isLoadedFirst,
     setObjDefault,
     objItemCurrent,
-    objValueTable,
     objDefault,
     setObjPrefix,
     setObjSuffix,
     listExplicit,
-    setObjValueTable,
     setIsLoadedFirst,
-    tables,
 } from './data/index.js';
 import {
     CHandlerBinary,
@@ -57,7 +54,6 @@ import {
     getAffixCount,
     getAffixFreqs,
     getAffixLevel,
-    getAffixProbability,
     getAvoidGroups,
     getCompositeStats,
     getExplicits,
@@ -65,21 +61,18 @@ import {
     getInvFile,
     getItemColor,
     getItemCrafts,
-    getItemGambleable,
     getItemLevel,
-    getItemLevelReq,
     getItemTypes,
-    getItemUpgradeable,
     getMaxAffixCount,
     getStaffTiers,
     getStatOrder,
     getTitle,
     modcodeToItemStat,
     parseLocales,
+    parseTable,
     setAvoidGroups,
     updateItemStatCost,
 } from './utils/index';
-import { parseTable } from './utils/index';
 
 const objFont16 = {
     kerning: [
@@ -188,7 +181,7 @@ const objFont16 = {
     },
 };
 
-//Async file gets
+// Async file gets
 objFont16
     .load()
     .then(() => {
@@ -313,8 +306,9 @@ function saveD2i() {
             val &&
             [91, 92, 93, 94].indexOf(objItemCurrent.craft) !== -1 &&
             objStatD['ac%'].affix.hasOwnProperty('name')
-        )
+        ) {
             val += 1; // Thanks @Kaylin
+        }
         if (val && objItemCurrent.ethereal) {
             val = Math.floor(val * 1.5);
         }
@@ -322,8 +316,7 @@ function saveD2i() {
     }
 
     if (objItemCurrent.classid < 508) {
-        // Is from wep/armor table
-        val = objValueTable.durability || 0;
+        val = baseTypes[objItemCurrent.classid].durability || 0;
         br.bits(val, 8); // Dura
         if (val) {
             br.bits(val, 9); // Maxdura
@@ -947,7 +940,6 @@ const param = {
                     'ethereal',
                     'expansion',
                     'level',
-                    'charlvl',
                     'charclassid',
                     'autoaffix',
                     'p1',
@@ -977,22 +969,22 @@ function reload() {
     window.location.reload();
 }
 
-function hideSelect(select) {
-    objItemCurrent[select] = -1;
-    document.getElementById(select + '-Div').style.display = 'none';
-    document.getElementById(select + '-Select').value = -1;
-    document.getElementById(select + '-range1Div').style.display = 'none';
-    document.getElementById(select + '-range2Div').style.display = 'none';
-    document.getElementById(select + '-range3Div').style.display = 'none';
-    document.getElementById(select + '-range1Div').classList.remove('last');
-    document.getElementById(select + '-range2Div').classList.remove('last');
-    document.getElementById(select + '-range3Div').classList.remove('last');
-    getAffixCount();
-}
+// function hideSelect(select) {
+//     objItemCurrent[select] = -1;
+//     document.getElementById(select + '-Div').style.display = 'none';
+//     document.getElementById(select + '-Select').value = -1;
+//     document.getElementById(select + '-range1Div').style.display = 'none';
+//     document.getElementById(select + '-range2Div').style.display = 'none';
+//     document.getElementById(select + '-range3Div').style.display = 'none';
+//     document.getElementById(select + '-range1Div').classList.remove('last');
+//     document.getElementById(select + '-range2Div').classList.remove('last');
+//     document.getElementById(select + '-range3Div').classList.remove('last');
+//     getAffixCount();
+// }
 
-function showSelect(select) {
-    document.getElementById(select + '-Div').style.display = 'block';
-}
+// function showSelect(select) {
+//     document.getElementById(select + '-Div').style.display = 'block';
+// }
 
 function build() {
     const excludeTypes = [
@@ -1327,304 +1319,11 @@ function setSliderValue(control) {
     setSlider(autoMagic, 'autoaffix');
     setSlider(cubeMain, 'craft');
     generateItem();
-    updateTables();
 }
 
 function setSliderGroup(affixTable, affixGroup) {
     for (let i = 0; i < affixGroup.length; i++) {
         setSlider(affixTable, affixGroup[i]);
-    }
-}
-
-function updateTables() {
-    let t, index, val;
-
-    const insert = function (label, value, tooltip) {
-        const row = t.insertRow(0);
-        const cell1 = row.insertCell(0);
-        const cell2 = row.insertCell(1);
-        cell1.innerHTML = label;
-        cell2.innerHTML = value;
-        if (tooltip) {
-            cell2.title = tooltip;
-        }
-        // cell2.id = label + "-tableval";
-    };
-
-    setObjValueTable({});
-
-    for (const tableName in tables) {
-        t = document.getElementById(tableName + '-Table').tBodies[0];
-        t.innerHTML = '';
-
-        if (tableName === 'baseTypes') {
-            index = objItemCurrent.classid;
-        }
-
-        for (const column in tables[tableName]) {
-            switch (column) {
-                case 'chance for affixes':
-                    if (objItemCurrent.staffmods && objItemCurrent.quality === 6)
-                        insert(
-                            'affix chance (imbue)',
-                            '1/' + getAffixProbability(true),
-                            'probability of this combination of stats to appear with imbue quest'
-                        );
-                    insert(
-                        'affix chance',
-                        '1/' + getAffixProbability(),
-                        'probability of this combination of stats to appear'
-                    );
-                    break;
-
-                case 'min ingredient ilvl':
-                    if (objItemCurrent.craft === -1) {
-                        break;
-                    }
-                    val = Math.max((Math.max(objItemCurrent.minlevel) - Math.floor(objItemCurrent.charlvl / 2)) * 2, 1);
-                    if (val > 99) {
-                        val = 'not possible';
-                    }
-                    insert(
-                        'min ingredient ilvl',
-                        val,
-                        'minimum item level of main recipe ingredient to craft this item at char level: ' +
-                            objItemCurrent.charlvl
-                    );
-                    break;
-
-                case 'ideal ingredient ilvl':
-                    if (objItemCurrent.craft === -1) {
-                        break;
-                    }
-                    val = Math.max(
-                        Math.min(
-                            (Math.max(objItemCurrent.minlevel, 71) - Math.floor(objItemCurrent.charlvl / 2)) * 2,
-                            99
-                        ),
-                        1
-                    );
-                    insert(
-                        'ideal ingredient ilvl',
-                        val,
-                        'Ideal item level of main recipe ingredient to craft this item at char level: ' +
-                            objItemCurrent.charlvl
-                    );
-                    break;
-
-                case 'min ilvl':
-                    insert(
-                        'min ilvl',
-                        objItemCurrent.minlevel,
-                        'minimum item level to make these affixes available on the specific base. for mob drops, the base will not drop unless base specific ilvl is met'
-                    );
-                    break;
-
-                case 'level req':
-                    insert('level req', getItemLevelReq(), 'with stats included');
-                    break;
-
-                case 'color (equipped)':
-                    insert('color (equipped)', objItemCurrent.ecolor.name);
-                    break;
-
-                case 'color (inv)':
-                    insert('color (inv)', objItemCurrent.icolor.name);
-                    break;
-
-                case 'gambleable':
-                    insert('can be gambled', getItemGambleable());
-                    break;
-
-                case 'upgradeable':
-                    insert('can be upped', getItemUpgradeable());
-                    break;
-
-                case 'affix level':
-                    insert('affix level', objItemCurrent.alvl);
-                    break;
-
-                case 'nameable':
-                    insert('nameable', window[tableName][index][column] ? 'Yes' : 'No');
-                    break;
-
-                case '2handed':
-                    if (window[tableName][index].hasOwnProperty(column)) {
-                        insert('two handed', window[tableName][index][column] ? 'Yes' : 'No');
-                    }
-                    break;
-
-                case 'min dmg (total)':
-                case 'min throw dmg (total)':
-                case 'min 2h dmg (total)':
-                    if (objItemCurrent.classid > 305) {
-                        break;
-                    }
-                    val = baseTypes[objItemCurrent.classid][tables[tableName][column]];
-                    if (!val) {
-                        break;
-                    }
-                    if (objItemCurrent.ethereal) {
-                        val = Math.floor(val * 1.5);
-                    }
-                    val = Math.floor(val * (1 + (objStat['dmg%'] || 0) / 100.0));
-                    val += objStat['dmg-min'] || 0; //dmg/lvl is always for max damage
-                    insert(column, val, 'with stats included');
-                    break;
-
-                case 'max dmg (total)':
-                case 'max throw dmg (total)':
-                case 'max 2h dmg (total)':
-                    if (objItemCurrent.classid > 305) {
-                        break;
-                    }
-                    val = baseTypes[objItemCurrent.classid][tables[tableName][column]];
-                    if (!val) {
-                        break;
-                    }
-                    if (objItemCurrent.ethereal) {
-                        val = Math.floor(val * 1.5);
-                    }
-                    val = Math.floor(
-                        val *
-                            (1 +
-                                ((objStat['dmg%'] || 0) +
-                                    Math.floor(((objStat['dmg%/lvl'] || 0) * objItemCurrent.charlvl) / 8)) /
-                                    100.0)
-                    );
-                    val +=
-                        (objStat['dmg-max'] || 0) +
-                        Math.floor(((objStat['dmg/lvl'] || 0) * objItemCurrent.charlvl) / 8);
-                    insert(column, val, 'with stats included');
-                    break;
-
-                case 'min defense (total)':
-                    val =
-                        objStat['ac%'] || objStat['ac%/lvl']
-                            ? baseTypes[objItemCurrent.classid].maxac + 1
-                            : baseTypes[objItemCurrent.classid].minac;
-                    if (!val) {
-                        break;
-                    }
-                    if (
-                        [91, 92, 93, 94].indexOf(objItemCurrent.craft) !== -1 &&
-                        objStatD['ac%'].affix.hasOwnProperty('name')
-                    ) {
-                        val += 1; // Thanks @Kaylin
-                    }
-                    if (objItemCurrent.ethereal) {
-                        val = Math.floor(val * 1.5);
-                    }
-                    val = Math.floor(
-                        val *
-                            (1 +
-                                ((objStat['ac%'] || 0) +
-                                    Math.floor(((objStat['ac%/lvl'] || 0) * objItemCurrent.charlvl) / 8)) /
-                                    100.0)
-                    );
-                    val += (objStat.ac || 0) + Math.floor(((objStat['ac/lvl'] || 0) * objItemCurrent.charlvl) / 8);
-                    insert(column, val, 'with stats included');
-                    break;
-
-                case 'max defense (total)':
-                    val =
-                        objStat['ac%'] || objStat['ac%/lvl']
-                            ? baseTypes[objItemCurrent.classid].maxac + 1
-                            : baseTypes[objItemCurrent.classid].maxac;
-                    if (!val) {
-                        break;
-                    }
-                    if (
-                        [91, 92, 93, 94].indexOf(objItemCurrent.craft) !== -1 &&
-                        objStatD['ac%'].affix.hasOwnProperty('name')
-                    ) {
-                        val += 1; // Thanks @Kaylin
-                    }
-                    if (objItemCurrent.ethereal) {
-                        val = Math.floor(val * 1.5);
-                    }
-                    val = Math.floor(
-                        val *
-                            (1 +
-                                ((objStat['ac%'] || 0) +
-                                    Math.floor(((objStat['ac%/lvl'] || 0) * objItemCurrent.charlvl) / 8)) /
-                                    100.0)
-                    );
-                    val += (objStat.ac || 0) + Math.floor(((objStat['ac/lvl'] || 0) * objItemCurrent.charlvl) / 8);
-                    insert(column, val, 'with stats included');
-                    break;
-
-                case 'req strength (total)':
-                case 'req dexterity (total)':
-                    val = objStat[tables[tableName][column]] || 0;
-                    val = val - Math.floor(val * (Math.abs(objStat.ease || 0) / 100));
-                    if (!val) {
-                        break;
-                    }
-                    insert(column, val, 'with stats included');
-                    break;
-
-                case 'reqstr':
-                case 'reqdex':
-                    val = window[tableName][index][column];
-                    if (!window[tableName][index][column]) {
-                        break;
-                    }
-                    if (objItemCurrent.ethereal) {
-                        val -= 10;
-                    }
-                    insert(tables[tableName][column], val);
-                    break;
-
-                case 'gemsockets':
-                    if (objItemCurrent.maxsockets) {
-                        objValueTable[column] = objItemCurrent.maxsockets;
-                        insert(tables[tableName][column], objItemCurrent.maxsockets, 'considers ilvl and basetype');
-                    }
-                    break;
-
-                case 'durability':
-                    val = window[tableName][index][column];
-                    if (
-                        !val ||
-                        baseTypes[objItemCurrent.classid].stackable ||
-                        baseTypes[objItemCurrent.classid].nodurability
-                    )
-                        break;
-                    if (objItemCurrent.ethereal) {
-                        val = Math.floor(val / 2) + 1;
-                    }
-                    objValueTable[column] = val;
-                    insert(tables[tableName][column], val);
-                    break;
-
-                case 'minac':
-                case 'maxac':
-                case 'mindam':
-                case 'maxdam':
-                case 'maxmisdam':
-                case 'minmisdam':
-                case '2handmaxdam':
-                case '2handmindam':
-                    val = window[tableName][index][column];
-                    if (!val) {
-                        break;
-                    }
-                    if (objItemCurrent.ethereal) {
-                        val = Math.floor(val * 1.5);
-                    }
-                    //objStat[column] = val;
-                    objValueTable[column] = val;
-                    insert(tables[tableName][column], val);
-                    break;
-
-                default:
-                    if (window[tableName][index][column]) {
-                        objValueTable[column] = window[tableName][index][column];
-                        insert(tables[tableName][column], window[tableName][index][column]);
-                    }
-            }
-        }
     }
 }
 
@@ -1720,11 +1419,9 @@ const filterAffixes = (affixTable, affix) => {
             }
             break;
 
-        case 'smod1': //smods
+        case 'smod1': // smods
         case 'smod2':
         case 'smod3':
-            //objItemCurrent[affix+'total'] = {1:0,6:0,12:0,18:0,24:0,30:0};
-
             for (let i = 0; i < affixTable.length; i++) {
                 if (!affixTable[i].charclass) {
                     continue;
@@ -1735,8 +1432,6 @@ const filterAffixes = (affixTable, affix) => {
                 if (affixTable[i].charclass !== objItemCurrent.staffmods) {
                     continue;
                 }
-                //if ((affixTable[i].itypea1 && objItemCurrent.types.indexOf(affixTable[i].itypea1) === -1) &&
-                //	(affixTable[i].itypea2 && objItemCurrent.types.indexOf(affixTable[i].itypea2) === -1)){ continue;}
                 if (affix === 'smod1' && (objItemCurrent.smod2 === i || objItemCurrent.smod3 === i)) {
                     continue;
                 }
@@ -1750,12 +1445,11 @@ const filterAffixes = (affixTable, affix) => {
                     continue;
                 }
 
-                //objItemCurrent[affix+'total'][affixTable[i].reqlevel] += 1;
                 document.getElementById(affix + '-' + i).disabled = false;
             }
             break;
 
-        default: //prefixes/suffixes/autoaffixes
+        default: // prefixes/suffixes/autoaffixes
             objItemCurrent[affix + 'totalfreq'] = 0;
             objItemCurrent[affix + 'groupfreq'] = 0;
 
@@ -1769,25 +1463,25 @@ const filterAffixes = (affixTable, affix) => {
             for (let i = 0; i < affixTable.length; i++) {
                 if (!affixTable[i].name) {
                     continue;
-                } //Affix has no name
+                } // Affix has no name
                 if (!affixTable[i].spawnable) {
                     continue;
-                } //Affix cannot spawn
+                } // Affix cannot spawn
 
                 document.getElementById(affix + '-' + i).disabled = true;
 
                 if (affixTable[i].version === 0) {
                     continue;
-                } //Old affixes that aren't used anymore
+                } // Old affixes that aren't used anymore
                 if (affixTable[i].version !== 1 && !objItemCurrent.expansion) {
                     continue;
-                } //Item version isn't same as affix
+                } // Item version isn't same as affix
                 if (!affixTable[i].rare && objItemCurrent.quality !== 4) {
                     continue;
-                } //Item is not magic and this affix only spawns on magic items
+                } // Item is not magic and this affix only spawns on magic items
                 if (objItemCurrent.types.indexOf(affixTable[i].etype1) > -1) {
                     continue;
-                } //Item has an equiv matching one of the groups this affix cannot be on
+                } // Item has an equiv matching one of the groups this affix cannot be on
                 if (objItemCurrent.types.indexOf(affixTable[i].etype2) > -1) {
                     continue;
                 }
@@ -1805,7 +1499,7 @@ const filterAffixes = (affixTable, affix) => {
                     affixTable[i].classspecific &&
                     affixTable[i].classspecific !== objItemCurrent.class
                 )
-                    continue; //Affix is class specific and doesn't match the class specific base (if any)
+                    continue; // Affix is class specific and doesn't match the class specific base (if any)
                 if (
                     objItemCurrent.types.indexOf(affixTable[i].itype1) === -1 &&
                     objItemCurrent.types.indexOf(affixTable[i].itype2) === -1 &&
@@ -1815,19 +1509,19 @@ const filterAffixes = (affixTable, affix) => {
                     objItemCurrent.types.indexOf(affixTable[i].itype6) === -1 &&
                     objItemCurrent.types.indexOf(affixTable[i].itype7) === -1
                 )
-                    continue; //Affix cannot spawn on this basetype (none of the equivs match itype1-7)
+                    continue; // Affix cannot spawn on this basetype (none of the equivs match itype1-7)
                 if (affixTable[i].level && objItemCurrent.alvl < affixTable[i].level) {
                     continue;
-                } //Item level is too low
+                } // Item level is too low
                 if (affixTable[i].maxlevel && affixTable[i].maxlevel < objItemCurrent.level) {
                     continue;
-                } //Item level is too high
+                } // Item level is too high
                 if (affix === 'autoaffix' && affixTable[i].group !== objItemCurrent.autogroup) {
                     continue;
-                } //Autogroup doesn't match the group of affixes the item can spawn with
+                } // Autogroup doesn't match the group of affixes the item can spawn with
                 if (affixOverCap(affix)) {
                     continue;
-                } //This affix would go over prefix/suffix/affix cap
+                } // This affix would go over prefix/suffix/affix cap
 
                 objItemCurrent[affix + 'totalfreq'] += affixTable[i].frequency;
                 if (objItemCurrent[affix] !== -1 && affixTable[objItemCurrent[affix]].group === affixTable[i].group)
@@ -1851,13 +1545,11 @@ const filterAffixes = (affixTable, affix) => {
 
                 if (avoid.indexOf(affixTable[i].group) > -1) {
                     continue;
-                } //Affix has a group that is already selected
+                } // Affix has a group that is already selected
 
                 document.getElementById(affix + '-' + i).disabled = false;
             }
     }
-
-    //if (affix === "autoaffix") return;
 
     if (objItemCurrent[affix] !== -1 && document.getElementById(affix + '-' + objItemCurrent[affix]).disabled) {
         document.getElementById(affix + '-Select').value = -1;
@@ -1881,8 +1573,6 @@ function update(control) {
     objItemCurrent.namesuf = +document.getElementById('namesuf-Select').value;
     objItemCurrent.ethereal = +document.getElementById('ethereal-Select').value;
     objItemCurrent.expansion = +document.getElementById('expansion-Select').value;
-    objItemCurrent.level = +document.getElementById('level-Select').value;
-    objItemCurrent.charlvl = +document.getElementById('charlvl-Select').value;
     objItemCurrent.charclassid = +document.getElementById('charclassid-Select').value;
     objItemCurrent.p1 = +document.getElementById('p1-Select').value;
     objItemCurrent.p2 = +document.getElementById('p2-Select').value;
@@ -1981,7 +1671,6 @@ function update(control) {
     generateItem();
 
     param.setAll();
-    updateTables();
 
     setIsLoadedFirst(false);
 }
@@ -1998,10 +1687,6 @@ const etherealSelect = document.getElementById('ethereal-Select');
 etherealSelect.onchange = update.bind(this, etherealSelect);
 const expansionSelect = document.getElementById('expansion-Select');
 expansionSelect.onchange = update.bind(this, expansionSelect);
-const levelSelect = document.getElementById('level-Select');
-levelSelect.onchange = update.bind(this, levelSelect);
-const charlvlSelect = document.getElementById('charlvl-Select');
-charlvlSelect.onchange = update.bind(this, charlvlSelect);
 const charclassidSelect = document.getElementById('charclassid-Select');
 charclassidSelect.onchange = update.bind(this, charclassidSelect);
 const p1Select = document.getElementById('p1-Select');

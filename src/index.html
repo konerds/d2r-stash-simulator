@@ -5,12 +5,24 @@
     <meta property="og:description" content="D2R Item Simulator" />
     <link rel="icon" href="<%=htmlWebpackPlugin.files.favicon%>" type="image/png" sizes="32x32" />
     <title>D2R Item Simulator</title>
-    <!-- <script src="app.js"></script> -->
 </head>
 <body>
     <h2>D2R Item Simulator</h2>
     <div id="left" class="left">
         <br /><br />
+        <select id="charclassid-Select">
+            <option value="0">Amazon</option>
+            <option value="1">Sorceress</option>
+            <option value="2">Necromancer</option>
+            <option value="3">Paladin</option>
+            <option value="4">Barbarian</option>
+            <option value="5">Druid</option>
+            <option value="6">Assassin</option>
+        </select>
+        Your Charcter<br />
+
+        <br /><br />
+
         <select id="classid-Select">
             <!-- baseTypes -->
         </select>
@@ -48,22 +60,6 @@
             <option value="0">No</option>
         </select>
         Expansion<br />
-
-        <input id="level-Select" type="number" value="99" min="1" max="99" style="padding-left: 4px" />
-        Item Level<br />
-        <input id="charlvl-Select" type="number" value="99" min="1" max="99" style="padding-left: 4px" />
-        Char Level<br />
-
-        <select id="charclassid-Select">
-            <option value="0">Amazon</option>
-            <option value="1">Sorceress</option>
-            <option value="2">Necromancer</option>
-            <option value="3">Paladin</option>
-            <option value="4">Barbarian</option>
-            <option value="5">Druid</option>
-            <option value="6">Assassin</option>
-        </select>
-        Char class<br />
 
         <br />
         <br />
@@ -327,31 +323,6 @@
             </div>
         </div>
     </div>
-
-    <div id="right" class="right">
-        <br /><br />
-        <table id="general-Table" class="table">
-            <thead>
-                <tr>
-                    <th colspan="2">Overview</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-        <table id="baseTypes-Table" class="table">
-            <thead>
-                <tr>
-                    <th colspan="2">Base Specific</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-        <!--<table id="magicPrefix-Table"	class="table"><thead><tr><th colspan="2">Prefixes		</th></tr></thead><tbody></tbody></table>
-		<table id="magicSuffix-Table"	class="table"><thead><tr><th colspan="2">Suffixes		</th></tr></thead><tbody></tbody></table>
-		<table id="skills-Table"		class="table"><thead><tr><th colspan="2">Staff Mods		</th></tr></thead><tbody></tbody></table>
-		<table id="autoMagic-Table"		class="table"><thead><tr><th colspan="2">Auto Affix		</th></tr></thead><tbody></tbody></table>-->
-    </div>
-
     <div id="middle" class="middle" title="Click to save image"></div>
 </body>
 

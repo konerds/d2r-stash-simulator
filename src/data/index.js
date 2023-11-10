@@ -282,6 +282,7 @@ export const listGroupAffix = [
 export const listGroupAvoid = [[[], [], []], [[], [], []], [[], [], []], [[]], [[]]];
 
 export const listClass = ['Amazon', 'Sorceress', 'Necromancer', 'Paladin', 'Barbarian', 'Druid', 'Assassin'];
+
 export const listCodeClass = ['ama', 'sor', 'nec', 'pal', 'bar', 'dru', 'ass'];
 
 export const objTableColor = {};
@@ -301,13 +302,6 @@ export let listStatOffense = [];
 export const setListStatOffense = (listNew) => {
     listStatOffense = [...listNew];
 };
-
-export let objValueTable = {};
-export const setObjValueTable = (objNew) => {
-    objValueTable = Object.assign({}, objNew);
-};
-
-// export const objValueInitial = {};
 
 export let listImplicit = [];
 export const setListImplicit = (listNew) => {
@@ -360,7 +354,6 @@ export const objItemCurrent = {
     smod1: -1,
     smod2: -1,
     smod3: -1,
-
     // Calculated
     invfile: 'invtow',
     minlevel: 0, // Minimum item level to get all affixes on this item
@@ -413,60 +406,3 @@ export const listTabSkill = [
     'StrSklTabItem20', // 19 Shadow
     'StrSklTabItem21', // 20 MA
 ];
-
-export const tables = {
-    //Values to get from the table, add extras separately (column: label)
-    baseTypes: {
-        gambleable: 'can be gambled',
-        upgradeable: 'can be upped',
-        nameable: 'nameable',
-        maxstack: 'max stack',
-        invheight: 'inv height',
-        invwidth: 'inv width',
-        durability: 'durability',
-        dexbonus: 'dex bonus to dmg%',
-        strbonus: 'str bonus to dmg%',
-        '2handed': 'two handed',
-        speed: 'speed modifier',
-        rangeadder: 'weapon range',
-        gemsockets: 'max sockets',
-        levelreq: 'req level',
-        level: 'min ilvl',
-        reqdex: 'req dexterity',
-        reqstr: 'req strength',
-        maxac: 'max defense',
-        minac: 'min defense',
-        maxdam: 'max dmg',
-        mindam: 'min dmg',
-        maxmisdam: 'max throw dmg',
-        minmisdam: 'min throw dmg',
-        '2handmaxdam': 'max 2h dmg',
-        '2handmindam': 'min 2h dmg',
-        block: 'block',
-    },
-    general: {
-        'color (inv)': 'color (inv)',
-        'color (equipped)': 'color (equipped)',
-        'min ilvl': 'min ilvl',
-        'affix level': 'alvl',
-        'ideal ingredient ilvl': 'ideal ingredient ilvl',
-        'min ingredient ilvl': 'min ingredient ilvl',
-        'level req': 'level req',
-
-        'chance for affixes': 'chance for affixes',
-        'chance for affixes': 'chance for affixes',
-
-        'req dexterity (total)': 'reqdex',
-        'req strength (total)': 'reqstr',
-
-        'max defense (total)': 'maxac',
-        'min defense (total)': 'minac',
-
-        'max dmg (total)': 'maxdam',
-        'min dmg (total)': 'mindam',
-        'max throw dmg (total)': 'maxmisdam',
-        'min throw dmg (total)': 'minmisdam',
-        'max 2h dmg (total)': '2handmaxdam',
-        'min 2h dmg (total)': '2handmindam',
-    },
-};
