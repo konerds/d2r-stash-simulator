@@ -53,5 +53,5 @@ module.exports = merge(configCommon, {
         new CleanWebpackPlugin(),
         new MiniCssExtractPlugin({ filename: '[name].css' }),
     ],
-    devtool: 'hidden-source-map',
+    // devtool: 'hidden-source-map',
 });

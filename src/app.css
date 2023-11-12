@@ -19,7 +19,7 @@ footer {
 body {
     background-size: cover;
     background-color: black;
-    background-image: url('assets/images/back.jpg');
+    background-image: url('assets/images/bg-act4.jpg');
     background-repeat: no-repeat;
     background-attachment: fixed;
     text-shadow: 0 0 6px #000, 0 0 6px #000, 0 0 6px #000, 0 0 6px #000, 0 0 6px #000;
@@ -204,4 +204,48 @@ canvas {
     position: absolute;
     border-radius: 7px;
     box-shadow: 0 0 10px #000000, 0 0 10px #000000;
+}
+
+@media (max-width: 799.98px) {
+    body {
+        background-position: 50% 50%;
+    }
+
+    h2,
+    .left,
+    .right,
+    canvas,
+    .button {
+        position: relative;
+    }
+
+    .middle {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 0 auto 20px auto;
+    }
+
+    .left {
+        height: auto;
+    }
+
+    #save {
+        left: 0;
+        margin-left: 10px;
+    }
+
+    .button {
+        margin-top: 20px;
+    }
+}
+
+@media ((min-width: 800px) and (max-width: 1199.98px)) {
+    .middle {
+        position: fixed;
+        height: 100%;
+        width: 60%;
+        top: 0;
+        right: 0;
+    }
 }
