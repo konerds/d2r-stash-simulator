@@ -18,7 +18,7 @@
     "bugs": {
         "url": "https://github.com/konerds/d2r-stash-simulator/issues"
     },
-    "dependencies": {
+    "devDependencies": {
         "@babel/core": "^7.22.11",
         "@babel/preset-env": "^7.22.14",
         "arraybuffer-loader": "^1.0.8",
