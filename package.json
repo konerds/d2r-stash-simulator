@@ -19,13 +19,6 @@
         "url": "https://github.com/konerds/d2r-stash-simulator/issues"
     },
     "dependencies": {
-        "html-webpack-plugin": "^5.5.3",
-        "clean-webpack-plugin": "^4.0.0",
-        "mini-css-extract-plugin": "^2.7.6",
-        "optimize-css-assets-webpack-plugin": "^6.0.1",
-        "terser-webpack-plugin": "^5.3.9"
-    },
-    "devDependencies": {
         "@babel/core": "^7.22.11",
         "@babel/preset-env": "^7.22.14",
         "arraybuffer-loader": "^1.0.8",
@@ -37,6 +30,11 @@
         "webpack": "^5.88.2",
         "webpack-cli": "^5.1.4",
         "webpack-dev-server": "^4.15.1",
-        "webpack-merge": "^5.9.0"
+        "webpack-merge": "^5.9.0",
+        "html-webpack-plugin": "^5.5.3",
+        "clean-webpack-plugin": "^4.0.0",
+        "mini-css-extract-plugin": "^2.7.6",
+        "optimize-css-assets-webpack-plugin": "^6.0.1",
+        "terser-webpack-plugin": "^5.3.9"
     }
 }
