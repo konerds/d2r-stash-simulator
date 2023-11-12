@@ -296,7 +296,6 @@ function saveD2i() {
             break;
     }
 
-    //br.bits(0, 5); // Only applies to tp and id tomes
     br.bits(0, 1);
 
     if (objItemCurrent.classid > 305 && objItemCurrent.classid < 508) {
@@ -307,7 +306,7 @@ function saveD2i() {
             [91, 92, 93, 94].indexOf(objItemCurrent.craft) !== -1 &&
             objStatD['ac%'].affix.hasOwnProperty('name')
         ) {
-            val += 1; // Thanks @Kaylin
+            val += 1;
         }
         if (val && objItemCurrent.ethereal) {
             val = Math.floor(val * 1.5);
@@ -930,7 +929,6 @@ const param = {
     setAll: function () {
         window.location.hash = '';
         for (const key in objItemCurrent) {
-            //if (["type","types","class","staffmods","autogroup","amax","pmax","smax","pnum","snum","anum","maxsockets"].indexOf(key) > -1){ continue;}
             if (
                 [
                     'quality',
@@ -1120,7 +1118,6 @@ function build() {
             }
             skills[i].name = listLocale['skillname' + i] || listLocale['Skillname' + (i + 1)];
             option = document.createElement('option');
-            //option.text = skills[i].skill + " (" + skills[i].charclass + ")";
             option.text = skills[i].name + ' (' + skills[i].charclass + ')';
             option.value = i;
             option.id = 'smod' + (n + 1) + '-' + i;
@@ -1195,7 +1192,7 @@ function setSlider(affixTable, affix) {
 
         default:
             for (let i = 0; i < 4; i++) {
-                //Iterate the three modcodes - four if safety craft..
+                // Iterate the three modcodes - four if safety craft..
                 modcode =
                     objItemCurrent[affix] === -1
                         ? 0
@@ -1256,7 +1253,7 @@ function setSlider(affixTable, affix) {
                     +slider.value > modmax ||
                     +slider.value < modmin
                 ) {
-                    //Don't mess with selection unless there's a change in the range
+                    // Don't mess with selection unless there's a change in the range
                     document.getElementById(affix + '-range' + (i + 1) + 'Value').innerHTML = modmid;
                     objItemCurrent[affix + '-range' + (i + 1)] = modmid;
                     slider.min = modmin;
@@ -1598,7 +1595,7 @@ function update(control) {
     }
 
     if (baseTypes[objItemCurrent.classid].expansion) {
-        //Force expansion mods when using expansion only item types
+        // Force expansion mods when using expansion only item types
         document.getElementById('expansion-Select').value = 1;
         objItemCurrent.expansion = 1;
     }
@@ -1608,13 +1605,13 @@ function update(control) {
         objItemCurrent.ethereal &&
         objItemCurrent.classid !== 225
     ) {
-        //Force non eth items to be non eth
+        // Force non eth items to be non eth
         document.getElementById('ethereal-Select').value = 0;
         objItemCurrent.ethereal = 0;
     }
 
     if (!objItemCurrent.staffmods) {
-        //Remove staffmods if the base can't have them
+        // Remove staffmods if the base can't have them
         document.getElementById('smod1-Select').value = -1;
         document.getElementById('smod2-Select').value = -1;
         document.getElementById('smod3-Select').value = -1;

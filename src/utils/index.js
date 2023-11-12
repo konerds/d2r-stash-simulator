@@ -124,7 +124,7 @@ export const parseTable = (table, mode = false) => {
         if (mode) rows[rowData[0]] = row;
     }
     console.log('Parsed table with ' + (rows.length || Object.keys(rows).length) + ' rows');
-    //console.log(rows);
+    // console.log(rows);
     return rows;
 };
 
@@ -146,7 +146,6 @@ const readCString = (dr, offset) => {
 };
 
 const parseLocale = (bytestream) => {
-    // Special thanks to "Doug the master programmer"
     const dr = new DataView(bytestream);
 
     const numElements = dr.getUint16(2, true);
@@ -161,7 +160,6 @@ const parseLocale = (bytestream) => {
             continue;
         }
 
-        // const index = dr.getUint16(offset + 1, true);
         const keyOffset = dr.getInt32(offset + 7, true);
         const strOffset = dr.getInt32(offset + 11, true);
 
@@ -183,7 +181,7 @@ export const parseLocales = () => {
     listLocale['skillname61'] = listLocale['skillsname61'];
     listLocale['Skillname223'] = 'Poison Creeper';
     console.log('Parsed listLocale (' + LANGUAGE_CURRENT + ')');
-    //console.log(listLocale);
+    // console.log(listLocale);
 };
 
 export const getItemTypes = () => {
@@ -200,7 +198,7 @@ export const getItemTypes = () => {
             break;
         }
     }
-    itemType = itemTypes[t]; //Original row of item type
+    itemType = itemTypes[t]; // Original row of item type
     if (itemType.magic && !itemType.rare) {
         objItemCurrent.maxquality = 4;
     }
@@ -232,24 +230,24 @@ export const getItemTypes = () => {
 
 export const getMaxAffixCount = () => {
     switch (objItemCurrent.quality) {
-        case 6: //rare
+        case 6: // rare
             objItemCurrent.amax = 6;
             objItemCurrent.pmax = 3;
             objItemCurrent.smax = 3;
 
             if (objItemCurrent.classid === 643) {
-                //Is a jewel
+                // jewel
                 objItemCurrent.amax = 4;
             }
             break;
 
-        case 8: //crafted
+        case 8: // crafted
             objItemCurrent.amax = 4;
             objItemCurrent.pmax = 3;
             objItemCurrent.smax = 3;
             break;
 
-        default: //magic
+        default: // magic
             objItemCurrent.amax = 2;
             objItemCurrent.pmax = 1;
             objItemCurrent.smax = 1;
@@ -271,7 +269,6 @@ export const getAvoidGroups = (affix) => {
             return listGroupAvoid[i][listGroupAffix[i].indexOf(affix)];
         }
     }
-
     return [];
 };
 
@@ -280,7 +277,7 @@ export const setAvoidGroups = () => {
     listGroupAvoid[1] = [[], [], []];
 
     for (let i = 0; i < 3; i++) {
-        //iterate the prefixes
+        // iterate the prefixes
         for (let n = 0; n < 3; n++) {
             if (i !== n && objItemCurrent[listGroupAffix[0][i]] !== -1) {
                 listGroupAvoid[0][n].push(magicPrefix[objItemCurrent[listGroupAffix[0][i]]].group);
@@ -289,7 +286,7 @@ export const setAvoidGroups = () => {
     }
 
     for (let i = 0; i < 3; i++) {
-        //iterate the prefixes
+        // iterate the prefixes
         for (let n = 0; n < 3; n++) {
             if (i !== n && objItemCurrent[listGroupAffix[1][i]] !== -1) {
                 listGroupAvoid[1][n].push(magicSuffix[objItemCurrent[listGroupAffix[1][i]]].group);
@@ -396,7 +393,6 @@ export const getStatOrder = () => {
 };
 
 const getWepClassDesc = () => {
-    // Thanks to Doug "the best programmer" for getting this info!
     if (objItemCurrent.types.indexOf('staf') !== -1) {
         return 'Staff Class';
     }
@@ -443,7 +439,6 @@ const getWepClassDesc = () => {
 };
 
 const getWepSpeedDesc = (classId = 1, ias = 0) => {
-    // Another chunk of data nobody but Doug could help with, thanks !
     const wsLookup = [
         [1, 1],
         [1, 1],
@@ -651,7 +646,7 @@ export const getImplicits = () => {
                     [91, 92, 93, 94].indexOf(objItemCurrent.craft) !== -1 &&
                     objStatD['ac%'].affix.hasOwnProperty('name')
                 ) {
-                    val += 1; // Thanks @Kaylin
+                    val += 1;
                 }
                 pre = baseTypes[objItemCurrent.classid].maxac;
                 if (objItemCurrent.ethereal) {
@@ -725,7 +720,7 @@ export const getImplicits = () => {
                 if (objItemCurrent.classid > 305) {
                     break;
                 }
-                //Min
+                // Min
                 col = { throw: 'minmisdam', '1hand': 'mindam', '2hand': '2handmindam' }[ikey];
                 val = baseTypes[objItemCurrent.classid][col];
                 if (!val) {
@@ -736,9 +731,9 @@ export const getImplicits = () => {
                 }
                 pre = val;
                 val = Math.floor(val * (1 + (objStat['dmg%'] || 0) / 100.0));
-                val += objStat['dmg-min'] || 0; //dmg/lvl is always for max damage
+                val += objStat['dmg-min'] || 0; // dmg/lvl is always for max damage
                 val2 = val;
-                //Max
+                // Max
                 col = { throw: 'maxmisdam', '1hand': 'maxdam', '2hand': '2handmaxdam' }[ikey];
                 val = baseTypes[objItemCurrent.classid][col];
                 if (!val) {
@@ -865,7 +860,6 @@ export const getExplicits = () => {
             case 'smod1':
             case 'smod2':
             case 'smod3':
-                //listStatOffense[i].desc = "+" + listStatOffense[i].value + " to " + (listLocale[listStatOffense[i].skill.skill] || listStatOffense[i].skill.skill) + " (" + listLocale["partychar"+listStatOffense[i].skill.charclass] + " Only)";
                 listStatOffense[i].desc =
                     '+' +
                     listStatOffense[i].value +
@@ -1157,7 +1151,7 @@ export const updateItemStatCost = () => {
                     itemStatCost[stat].descstrpos = 'strModEnhancedDamage';
                     break;
                 default:
-                //console.log("Unhandled descstrpos for: " + stat);
+                // console.log("Unhandled descstrpos for: " + stat);
             }
         }
     }
@@ -1200,7 +1194,7 @@ export const getItemColor = (equipped) => {
 
 export const getItemLevel = () => {
     let lvl = Math.max(
-        //objItemCurrent.classid	=== -1 ? 0 : baseTypes[objItemCurrent.classid].level,
+        // objItemCurrent.classid	=== -1 ? 0 : baseTypes[objItemCurrent.classid].level,
         objItemCurrent.p1 === -1 ? 0 : magicPrefix[objItemCurrent.p1].level,
         objItemCurrent.p2 === -1 ? 0 : magicPrefix[objItemCurrent.p2].level,
         objItemCurrent.p3 === -1 ? 0 : magicPrefix[objItemCurrent.p3].level,
@@ -1295,7 +1289,7 @@ export const getStaffTiers = () => {
         smods[skills[i].reqlevel].push(i);
 
         if (
-            (skills[i].itypea1 || skills[i].itypea2 || skills[i].itypea3) && //At least one itypea specifified AND (item doesn't have itypea1 && 2 && 3) aka is not in any of the allowed itypea's
+            (skills[i].itypea1 || skills[i].itypea2 || skills[i].itypea3) && // At least one itypea specifified AND (item doesn't have itypea1 && 2 && 3) aka is not in any of the allowed itypea's
             objItemCurrent.types.indexOf(skills[i].itypea1) === -1 &&
             objItemCurrent.types.indexOf(skills[i].itypea2) === -1 &&
             objItemCurrent.types.indexOf(skills[i].itypea3) === -1
@@ -1336,7 +1330,7 @@ export const getItemCrafts = () => {
     for (let i = 0; i < cubeMain.length; i++) {
         if (cubeMain[i]['input 2'] !== 'jew' || cubeMain[i]['numinputs'] !== 4) {
             continue;
-        } //Only check crafting recipes
+        } // Only check crafting recipes
         const craftBase = cubeMain[i]['input 1'].split(',')[0];
 
         if (
