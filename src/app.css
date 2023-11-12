@@ -228,6 +228,8 @@ canvas {
 
     .left {
         height: auto;
+        min-width: 100%;
+        padding-left: 0;
     }
 
     #save {
