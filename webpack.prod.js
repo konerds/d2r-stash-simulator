@@ -31,13 +31,13 @@ module.exports = merge(configCommon, {
         ],
     },
     plugins: [
-        new webpack.BannerPlugin({
-            banner: `
-            Build Date: ${new Date().toLocaleString()}
-            Commit Version: ${childProcess.execSync('git rev-parse --short HEAD')}
-            Author: ${childProcess.execSync('git config user.name')}
-            `,
-        }),
+        // new webpack.BannerPlugin({
+        //     banner: `
+        //     Build Date: ${new Date().toLocaleString()}
+        //     Commit Version: ${childProcess.execSync('git rev-parse --short HEAD')}
+        //     Author: ${childProcess.execSync('git config user.name')}
+        //     `,
+        // }),
         new HtmlWebpackPlugin({
             template: './src/index.html',
             templateParameters: {
